@@ -3,26 +3,33 @@
 namespace App\Entity;
 
 use Doctrine\ORM\Mapping as ORM;
+use Symfony\Component\Serializer\Annotation\Groups;
 
 /**
  * @ORM\Entity(repositoryClass="App\Repository\DeviceRepository")
  */
 class Device 
 {
-    /*
+    /**
+     * @ORM\Id()
      * @ORM\GeneratedValue()
      * @ORM\Column(type="integer")
+     * 
+     * @Groups("group-all")
      */
-    //private $id;
+    private $id;
 	
 	/**
-	 * @ORM\Id()
 	 * @ORM\Column(type="string", length=64, name="unique_id", unique=true)
+	 * 
+	 * @Groups("group-all")
 	 */
     private $uniqueId;
 	
 	/**
 	 * @ORM\Column(type="string", length=255)
+	 * 
+	 * @Groups("group-all")
 	 */
     private $name;
     
@@ -32,30 +39,42 @@ class Device
 	 * everytime device list is displayed.
 	 * 
 	 * @ORM\ManyToOne(targetEntity="User")
-	 * @ORM\JoinColumn(name="last_user", referencedColumnName="qr_code")
+	 * @ORM\JoinColumn(name="last_user", referencedColumnName="id")
+	 * 
+	 * @Groups("group-all")
 	 */
     private $lastUser;
 	
 	/**
+	 * @ORM\Column(type="datetime")
+	 */
+    private $lastActivity;
+	
+	/**
 	 * @ORM\Column(type="boolean")
+	 * 
+	 * @Groups("group-all")
 	 */
 	private $simCard;
 	
 	/**
 	 * @ORM\Column(type="string", length=255)
+	 * 
+	 * @Groups("group-all")
 	 */
 	private $os;
 	
 	/**
 	 * @ORM\Column(type="boolean")
+	 * 
+	 * @Groups("group-all")
 	 */
 	private $enabled;
 	
-	
-    /*public function getId(): ?int
+    public function getId(): ?int
     {
         return $this->id;
-    }*/
+    }
     
     public function getUniqueId(): ?string 
 	{
@@ -93,6 +112,18 @@ class Device
 		return $this;
 	}
 	
+	public function getLastActivity(): ?\DateTime
+	{
+		return $this->lastActivity;
+	}
+	
+	public function setLastActivity(\DateTime $dateTime): self 
+	{
+		$this->lastActivity = $dateTime;
+		
+		return $this;
+	}
+	
 	public function getSimCard(): ?bool 
 	{
 		return $this->simCard;
@@ -114,6 +145,18 @@ class Device
 	{
 		$this->os = $os;
 			
+		return $this;
+	}
+	
+	public function isEnabled(): bool 
+	{
+		return $this->enabled;
+	}
+	
+	public function setEnabled(bool $enabled): self 
+	{
+		$this->enabled = $enabled;
+		
 		return $this;
 	}
 

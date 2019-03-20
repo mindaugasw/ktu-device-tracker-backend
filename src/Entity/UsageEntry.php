@@ -3,6 +3,7 @@
 namespace App\Entity;
 
 use Doctrine\ORM\Mapping as ORM;
+use Symfony\Component\Serializer\Annotation\Groups;
 
 /**
  * @ORM\Entity(repositoryClass="App\Repository\UsageEntryRepository")
@@ -10,36 +11,41 @@ use Doctrine\ORM\Mapping as ORM;
  */
 class UsageEntry
 {
-    /*
+    /**
      * @ORM\Id()
      * @ORM\Column(type="integer")
+     * 
+     * @Groups("group-all")
      */
-    //private $id;
+    private $id;
 
     /**
-	 * @ORM\Id()
 	 * @ORM\ManyToOne(targetEntity="User")
-     * @ORM\JoinColumn(name="user", referencedColumnName="qr_code")
+     * @ORM\JoinColumn(name="user", referencedColumnName="id")
+	 * 
+	 * @Groups("group-all")
      */
     private $user;
 
     /**
-	 * @ORM\Id()
 	 * @ORM\ManyToOne(targetEntity="Device")
-     * @ORM\JoinColumn(name="device", referencedColumnName="unique_id")
+     * @ORM\JoinColumn(name="device", referencedColumnName="id")
+	 * 
+	 * @Groups("group-all")
      */
     private $device;
 
     /**
-	 * @ORM\Id()
      * @ORM\Column(type="datetime")
+	 * 
+	 * @Groups("group-all")
      */
     private $timestamp;
 
-    /*public function getId(): ?int
+    public function getId(): ?int
     {
         return $this->id;
-    }*/
+    }
 
     public function getUser(): ?User
     {

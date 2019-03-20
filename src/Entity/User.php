@@ -2,52 +2,62 @@
 
 namespace App\Entity;
 
-use Doctrine\DBAL\Platforms\AbstractPlatform;
-use Doctrine\DBAL\Types\Type;
 use Doctrine\ORM\Mapping as ORM;
+use Symfony\Component\Serializer\Annotation\Groups;
 
 /**
  * @ORM\Entity(repositoryClass="App\Repository\UserRepository")
  */
 class User
 {
-    /*
+    /**
      * @ORM\Id()
      * @ORM\GeneratedValue()
      * @ORM\Column(type="integer")
+     * 
+     * @Groups("group-all")
      */
-    //private $id;
+    private $id;
 	
 	/**
-	 * @ORM\Id()
 	 * @ORM\Column(type="string", length=64, name="qr_code", unique=true)
+	 * 
+	 * @Groups("group-all")
 	 */
 	private $qrCode;
     
     /**
      * @ORM\Column(type="string", length=255)
+	 * 
+	 * @Groups("group-all")
      */
     private $name;
 
     /**
      * @ORM\Column(type="string", length=255)
+	 * 
+	 * @Groups("group-all")
      */
     private $surname;
     
     /**
      * @ORM\Column(type="string", length=255)
+	 * 
+	 * @Groups("group-all")
      */
     private $office;
 
     /**
      * @ORM\Column(type="integer")
+	 * 
+	 * @Groups("group-all")
      */
     private $floor;
 
-    /*public function getId(): ?int
+    public function getId(): ?int
     {
         return $this->id;
-    }*/
+    }
 	
 	public function getQrCode(): ?string
 	{
