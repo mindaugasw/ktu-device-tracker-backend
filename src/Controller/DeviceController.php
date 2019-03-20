@@ -2,18 +2,20 @@
 
 namespace App\Controller;
 
+use App\Entity\Device;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
+use Symfony\Component\Serializer\SerializerInterface;
+
 
 class DeviceController extends AbstractController
 {
-	/**
-	 * @Route("/testX", name="test_method")
-	 */
-	public function testMethod()
+	private $serializer;
+	
+	public function __construct(SerializerInterface $serializer)
 	{
-		return new Response("xD");
+		$this->serializer = $serializer;
 	}
 	
 	/**
@@ -21,6 +23,35 @@ class DeviceController extends AbstractController
 	 */
 	public function getDeviceList()
 	{
+		$devices = $this->getDoctrine()
+			->getRepository(Device::class)
+			->findAll();
 		
+		$json = $this->serializer->serialize(
+			$devices,
+			'json', ['groups' => 'group-all']
+		);
+		
+		return new Response(
+			$json,
+			Response::HTTP_OK,
+			['content-type' => 'application/json']
+		);
 	}
+	
+	/*
+	 * @Route("device/{device}", name="device_single"
+	 */
+	/*public function getDeviceSingle(SerializerInterface $serializer, Device $device)
+	{
+		
+	}*/
+	
+	/*
+	 * @Route("/device/new", name="device_new")
+	 */
+	/*public function createNewDevice()
+	{
+		
+	}*/
 }
