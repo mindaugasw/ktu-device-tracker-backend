@@ -10,6 +10,7 @@ use Symfony\Component\Serializer\Annotation\Groups;
  */
 class Device 
 {
+	
     /**
      * @ORM\Id()
      * @ORM\GeneratedValue()
@@ -47,6 +48,8 @@ class Device
 	
 	/**
 	 * @ORM\Column(type="datetime")
+	 * 
+	 * @Groups("group-all")
 	 */
     private $lastActivity;
 	
@@ -71,7 +74,19 @@ class Device
 	 */
 	private $enabled;
 	
-    public function getId(): ?int
+	
+	public function __construct($uniqueId, $name, $simCard, $os, $enabled)
+	{
+		$this->uniqueId = $uniqueId;
+		$this->name = $name;
+		$this->simCard = $simCard;
+		$this->os = $os;
+		$this->enabled = $enabled;
+		$this->lastActivity = new \DateTime('now');
+	}
+	
+	
+	public function getId(): ?int
     {
         return $this->id;
     }
