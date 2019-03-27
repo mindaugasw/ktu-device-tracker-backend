@@ -74,7 +74,6 @@ class DeviceController extends AbstractController
 		return new Response($json, Response::HTTP_OK, ['content-type' => 'application/json']);
 	}
 	
-	
 	/**
 	 * @Route("/device/new", name="device_new")
 	 */
@@ -104,6 +103,25 @@ class DeviceController extends AbstractController
 		return new Response($json, Response::HTTP_OK, ['content-type' => 'application/json']);
 	}
 	
+	/**
+	 * @Route("/device/delete", name="device_delete")
+	 */
+	public function deleteDevice(Request $request)
+	{
+		$uniqueId = $request->request->get('uniqueId');
+		if (!isset($uniqueId))
+			return new Response(null, Response::HTTP_BAD_REQUEST);
+		
+		$device = $this->getDoctrine()->getRepository(Device::class)->findOneBy(['uniqueId' => $uniqueId]);
+		if (!isset($device))
+			return new Response(null, Response::HTTP_NOT_FOUND);
+		
+		$em = $this->getDoctrine()->getManager();
+		$em->remove($device);
+		$em->flush();
+		
+		return new Response(null, Response::HTTP_OK);		
+	}
 	
 	/**
 	 * Must be at the bottom of the controller as otherwise it also catches all other routes.
