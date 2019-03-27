@@ -22,7 +22,7 @@ class DeviceController extends AbstractController
 	/**
 	 * @Route("/device/all", name="device_list")
 	 */
-	public function getDeviceList()
+	public function getDevicesList()
 	{
 		$devices = $this->getDoctrine()
 			->getRepository(Device::class)
