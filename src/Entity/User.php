@@ -53,8 +53,27 @@ class User
 	 * @Groups("group-all")
      */
     private $floor;
-
-    public function getId(): ?int
+    
+    public function __construct($name, $surname, $office, $floor)
+	{
+		$this->setName($name);
+		$this->setSurname($surname);
+		$this->setOffice($office);
+		$this->setFloor($floor);
+		$this->setQrCode($this->generateRandomString(8));
+	}
+	
+	function generateRandomString($length = 10) {
+		$characters = '0123456789abcdefghijklmnopqrstuvwxyz';
+		$charactersLength = strlen($characters);
+		$randomString = '';
+		for ($i = 0; $i < $length; $i++) {
+			$randomString .= $characters[rand(0, $charactersLength - 1)];
+		}
+		return $randomString;
+	}
+	
+	public function getId(): ?int
     {
         return $this->id;
     }
