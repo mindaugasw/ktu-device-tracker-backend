@@ -40,14 +40,14 @@ class Device
 	 * everytime device list is displayed.
 	 * 
 	 * @ORM\ManyToOne(targetEntity="User")
-	 * @ORM\JoinColumn(name="last_user", referencedColumnName="id")
+	 * @ORM\JoinColumn(name="last_user", referencedColumnName="id", nullable=true)
 	 * 
 	 * @Groups("group-all")
 	 */
     private $lastUser;
 	
 	/**
-	 * @ORM\Column(type="datetime")
+	 * @ORM\Column(type="datetime", nullable=true)
 	 * 
 	 * @Groups("group-all")
 	 */
@@ -120,7 +120,7 @@ class Device
 		return $this->lastUser;
 	}
 	
-	public function setLastUser(User $user): self 
+	public function setLastUser(?User $user): self 
 	{
 		$this->lastUser = $user;
 			
