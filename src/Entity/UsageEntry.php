@@ -13,6 +13,7 @@ class UsageEntry
 {
     /**
      * @ORM\Id()
+	 * @ORM\GeneratedValue()
      * @ORM\Column(type="integer")
      * 
      * @Groups("group-all")
@@ -42,7 +43,14 @@ class UsageEntry
      */
     private $timestamp;
 
-    public function getId(): ?int
+    public function __construct(User $user, Device $device, \DateTime $timestamp)
+	{
+		$this->setUser($user);
+		$this->setDevice($device);
+		$this->setTimestamp($timestamp);
+	}
+
+	public function getId(): ?int
     {
         return $this->id;
     }

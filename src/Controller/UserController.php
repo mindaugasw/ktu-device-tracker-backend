@@ -130,7 +130,7 @@ class UserController extends AbstractController
 	 *
 	 * @Route("user/{id}", name="user_single")
 	 */
-	public function getuserSingle(int $id)
+	public function getUserSingle(int $id)
 	{
 		$user = $this->getDoctrine()
 			->getRepository(user::class)

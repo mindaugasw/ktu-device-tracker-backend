@@ -3,6 +3,8 @@
 namespace App\Controller;
 
 use App\Entity\Device;
+use App\Entity\UsageEntry;
+use App\Entity\User;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
@@ -122,13 +124,49 @@ class DeviceController extends AbstractController
 		
 		return new Response(null, Response::HTTP_OK);		
 	}
+
+	/**
+	 * @Route("/device/register", name="device_register")
+	 */
+	public function registerDevice(Request $request)
+	{
+		$uniqueId = $request->request->get('uniqueId');
+		$userCode = $request->request->get('userCode');
+		if (!isset($uniqueId, $userCode))
+			return new Response(null, Response::HTTP_BAD_REQUEST);
+		
+		$device = $this->getDoctrine()->getRepository(Device::class)->findOneBy(['uniqueId' => $uniqueId]);
+		$user = $this->getDoctrine()->getRepository(User::class)->findOneBy(['qrCode' => $userCode]);
+		if (!isset($device, $user))
+			return new Response(null, Response::HTTP_NOT_FOUND);
+		
+		$timestamp = new \DateTime('now');
+		$device->setLastUser($user);
+		$device->setLastActivity($timestamp);
+		$usageEntry = new UsageEntry($user, $device, $timestamp);
+		
+		$em = $this->getDoctrine()->getManager();
+		$em->persist($usageEntry);
+		$em->flush();
+		
+		$json = $this->serializer->serialize(
+			$usageEntry, 
+			'json', ['groups' => 'group-all']
+		);
+		
+		return new Response(
+			$json,
+			Response::HTTP_OK,
+			['content-type' => 'application/json']
+		);
+	}
 	
 	/**
 	 * Must be at the bottom of the controller as otherwise it also catches all other routes.
 	 *
 	 * @Route("device/{deviceId}", name="device_single")
 	 */
-	public function getDeviceSingle(string $deviceId)
+	public function getDevice(string $deviceId)
 	{
 		$device = $this->getDoctrine()
 			->getRepository(Device::class)
