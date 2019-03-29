@@ -40,7 +40,52 @@ class DeviceController extends AbstractController
 			Response::HTTP_OK,
 			['content-type' => 'application/json']
 		);
-	}	
+	}
+
+	/**
+	 * @Route("/device/all/history", name="device_all_history")
+	 */
+	public function getAllDevicesHistory()
+	{
+		$history = $this->getDoctrine()->getRepository(UsageEntry::class)->findAll();		
+		$json = $this->serializer->serialize(
+			$history, 
+			'json', ['groups' => 'group-all']
+		);
+		
+		return new Response(
+			$json, 
+			Response::HTTP_OK, 
+			['content-type' => 'application/json']
+		);		
+	}
+
+	/**
+	 * @Route("/device/{deviceId}/history", name="device_single_history")
+	 */
+	public function getSingleDeviceHistory(string $deviceId)
+	{
+		$device = $this->getDoctrine()->getRepository(Device::class)->findBy(['uniqueId' => $deviceId]);
+		if (sizeof($device) === 0)
+			return new Response(null, Response::HTTP_NOT_FOUND);
+		
+		$history = $this->getDoctrine()->getRepository(UsageEntry::class)->findBy(['device' => $device]);
+		
+		
+		/*if (sizeof($history) )
+			return new Response(null, Response::HTTP_NOT_FOUND);*/
+		
+		$json = $this->serializer->serialize(
+			$history,
+			'json', ['groups' => 'group-all']
+		);
+		
+		return new Response(
+			$json,
+			Response::HTTP_OK,
+			['content-type' => 'application/json']
+		);
+	}
 	
 	/**
 	 * @Route("device/update", name="device_update")
@@ -110,15 +155,22 @@ class DeviceController extends AbstractController
 	 */
 	public function deleteDevice(Request $request)
 	{
+		// Check if argument is set
 		$uniqueId = $request->request->get('uniqueId');
 		if (!isset($uniqueId))
 			return new Response(null, Response::HTTP_BAD_REQUEST);
 		
+		// Get device
 		$device = $this->getDoctrine()->getRepository(Device::class)->findOneBy(['uniqueId' => $uniqueId]);
 		if (!isset($device))
 			return new Response(null, Response::HTTP_NOT_FOUND);
 		
+		// Get all usage log entries to remove them as well
+		$deviceLog = $this->getDoctrine()->getRepository(UsageEntry::class)->findBy(['device' => $device]);
+		
 		$em = $this->getDoctrine()->getManager();
+		foreach ($deviceLog as $logEntry)
+			$em->remove($logEntry);
 		$em->remove($device);
 		$em->flush();
 		
@@ -130,16 +182,19 @@ class DeviceController extends AbstractController
 	 */
 	public function registerDevice(Request $request)
 	{
+		// Check if both arguments set
 		$uniqueId = $request->request->get('uniqueId');
 		$userCode = $request->request->get('userCode');
 		if (!isset($uniqueId, $userCode))
 			return new Response(null, Response::HTTP_BAD_REQUEST);
 		
+		// Check if both entities exist
 		$device = $this->getDoctrine()->getRepository(Device::class)->findOneBy(['uniqueId' => $uniqueId]);
 		$user = $this->getDoctrine()->getRepository(User::class)->findOneBy(['qrCode' => $userCode]);
 		if (!isset($device, $user))
 			return new Response(null, Response::HTTP_NOT_FOUND);
 		
+		// Process device registering
 		$timestamp = new \DateTime('now');
 		$device->setLastUser($user);
 		$device->setLastActivity($timestamp);
