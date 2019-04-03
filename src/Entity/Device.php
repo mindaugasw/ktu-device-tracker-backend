@@ -82,7 +82,7 @@ class Device
 		$this->simCard = $simCard;
 		$this->os = $os;
 		$this->enabled = $enabled;
-		$this->lastActivity = new \DateTime('now');
+		$this->setLastActivity(new \DateTime('now'));
 	}
 	
 	

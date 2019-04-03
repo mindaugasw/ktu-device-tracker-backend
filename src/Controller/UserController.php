@@ -3,6 +3,7 @@
 namespace App\Controller;
 
 use App\Entity\Device;
+use App\Entity\UsageEntry;
 use App\Entity\User;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\Routing\Annotation\Route;
@@ -104,21 +105,28 @@ class UserController extends AbstractController
 	 */
 	public function deleteUser(Request $request)
 	{
+		// Check if parameter is set
 		$id = $request->request->get('id');
 		if (!isset($id))
 			return new Response(null, Response::HTTP_BAD_REQUEST);
 		
-		// BAD REQUEST if user does not exist
+		// Check if user exists
 		$user = $this->getDoctrine()->getRepository(User::class)->find($id);
 		if (!isset($user))
 			return new Response(null, Response::HTTP_NOT_FOUND);
 		
 		// Remove user from all devices
-		$userDevices = $this->getDoctrine()->getRepository(Device::class)->findBy(['lastUser' => $id]);
+		$userDevices = $this->getDoctrine()->getRepository(Device::class)->findBy(['lastUser' => $user]);
 		foreach ($userDevices as $device)
 			$device->setLastUser(null);
-				
+
 		$em = $this->getDoctrine()->getManager();
+		
+		// Remove all user usage history/log
+		$userLog = $this->getDoctrine()->getRepository(UsageEntry::class)->findBy(['user' => $user]);
+		foreach ($userLog as $logEntry)
+			$em->remove($logEntry);
+		
 		$em->remove($user);
 		$em->flush();
 		
@@ -130,7 +138,7 @@ class UserController extends AbstractController
 	 *
 	 * @Route("user/{id}", name="user_single")
 	 */
-	public function getuserSingle(int $id)
+	public function getUserSingle(int $id)
 	{
 		$user = $this->getDoctrine()
 			->getRepository(user::class)
