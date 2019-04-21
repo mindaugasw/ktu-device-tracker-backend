@@ -16,6 +16,8 @@ class DeviceController extends AbstractController
 {
 	private $serializer;
 	
+	private $headers = ['content-type' => 'application/json', 'Access-Control-Allow-Origin' => '*'];
+	
 	public function __construct(SerializerInterface $serializer)
 	{
 		$this->serializer = $serializer;
@@ -38,7 +40,7 @@ class DeviceController extends AbstractController
 		return new Response(
 			$json,
 			Response::HTTP_OK,
-			['content-type' => 'application/json']
+			$this->headers
 		);
 	}
 
@@ -55,8 +57,8 @@ class DeviceController extends AbstractController
 		
 		return new Response(
 			$json, 
-			Response::HTTP_OK, 
-			['content-type' => 'application/json']
+			Response::HTTP_OK,
+			$this->headers
 		);		
 	}
 
@@ -67,7 +69,7 @@ class DeviceController extends AbstractController
 	{
 		$device = $this->getDoctrine()->getRepository(Device::class)->findBy(['uniqueId' => $deviceId]);
 		if (sizeof($device) === 0)
-			return new Response(null, Response::HTTP_NOT_FOUND);
+			return new Response(null, Response::HTTP_NOT_FOUND, $this->headers);
 		
 		$history = $this->getDoctrine()->getRepository(UsageEntry::class)->findBy(['device' => $device]);
 		
@@ -83,7 +85,7 @@ class DeviceController extends AbstractController
 		return new Response(
 			$json,
 			Response::HTTP_OK,
-			['content-type' => 'application/json']
+			$this->headers
 		);
 	}
 	
@@ -94,13 +96,13 @@ class DeviceController extends AbstractController
 	{
 		$uniqueId = $request->request->get('uniqueId');
 		if (!isset($uniqueId))
-			return new Response(null, Response::HTTP_BAD_REQUEST);
+			return new Response(null, Response::HTTP_BAD_REQUEST, $this->headers);
 		
 		$em = $this->getDoctrine()->getManager();
 		$device = $em->getRepository(Device::class)->findOneBy(['uniqueId' => $uniqueId]);
 		
 		if (!isset($device))
-			return new Response(null, Response::HTTP_NOT_FOUND);
+			return new Response(null, Response::HTTP_NOT_FOUND, $this->headers);
 		
 		$name = $request->request->get('name');
 		$simCard = $request->request->get('simCard');
@@ -118,7 +120,7 @@ class DeviceController extends AbstractController
 		
 		// NOT WORKING: lastActivity is missing in result json. There's some difficulties serializing DateTime type.
 		$json = $this->serializer->serialize($device, 'json', ['groups' => 'group-all']);		
-		return new Response($json, Response::HTTP_OK, ['content-type' => 'application/json']);
+		return new Response($json, Response::HTTP_OK, $this->headers);
 	}
 	
 	/**
@@ -133,21 +135,21 @@ class DeviceController extends AbstractController
 		$enabled = true; // for now, defaults to true. Should require admin verification later.
 		
 		if (!isset($uniqueId, $name, $simCard, $os, $enabled))
-			return new Response(null, Response::HTTP_BAD_REQUEST);
+			return new Response(null, Response::HTTP_BAD_REQUEST, $this->headers);
 		
 		$device = new Device($uniqueId, $name, $simCard, $os, $enabled);
 		
 		// BAD_REQUEST if there already is a device with same uniqueId
 		$oldDevice = $this->getDoctrine()->getRepository(Device::class)->findOneBy(['uniqueId' => $uniqueId]);
 		if (isset($oldDevice))
-			return new Response(null, Response::HTTP_BAD_REQUEST);
+			return new Response(null, Response::HTTP_BAD_REQUEST, $this->headers);
 		
 		$em = $this->getDoctrine()->getManager();
 		$em->persist($device);
 		$em->flush();
 		
 		$json = $this->serializer->serialize($device, 'json', ['groups' => 'group-all']);
-		return new Response($json, Response::HTTP_OK, ['content-type' => 'application/json']);
+		return new Response($json, Response::HTTP_OK, $this->headers);
 	}
 	
 	/**
@@ -158,12 +160,12 @@ class DeviceController extends AbstractController
 		// Check if argument is set
 		$uniqueId = $request->request->get('uniqueId');
 		if (!isset($uniqueId))
-			return new Response(null, Response::HTTP_BAD_REQUEST);
+			return new Response(null, Response::HTTP_BAD_REQUEST, $this->headers);
 		
 		// Get device
 		$device = $this->getDoctrine()->getRepository(Device::class)->findOneBy(['uniqueId' => $uniqueId]);
 		if (!isset($device))
-			return new Response(null, Response::HTTP_NOT_FOUND);
+			return new Response(null, Response::HTTP_NOT_FOUND, $this->headers);
 		
 		// Get all usage log entries to remove them as well
 		$deviceLog = $this->getDoctrine()->getRepository(UsageEntry::class)->findBy(['device' => $device]);
@@ -174,7 +176,7 @@ class DeviceController extends AbstractController
 		$em->remove($device);
 		$em->flush();
 		
-		return new Response(null, Response::HTTP_OK);		
+		return new Response(null, Response::HTTP_OK, $this->headers);		
 	}
 
 	/**
@@ -186,13 +188,13 @@ class DeviceController extends AbstractController
 		$uniqueId = $request->request->get('uniqueId');
 		$userCode = $request->request->get('userCode');
 		if (!isset($uniqueId, $userCode))
-			return new Response(null, Response::HTTP_BAD_REQUEST);
+			return new Response(null, Response::HTTP_BAD_REQUEST, $this->headers);
 		
 		// Check if both entities exist
 		$device = $this->getDoctrine()->getRepository(Device::class)->findOneBy(['uniqueId' => $uniqueId]);
 		$user = $this->getDoctrine()->getRepository(User::class)->findOneBy(['qrCode' => $userCode]);
 		if (!isset($device, $user))
-			return new Response(null, Response::HTTP_NOT_FOUND);
+			return new Response(null, Response::HTTP_NOT_FOUND, $this->headers);
 		
 		// Process device registering
 		$timestamp = new \DateTime('now');
@@ -212,7 +214,7 @@ class DeviceController extends AbstractController
 		return new Response(
 			$json,
 			Response::HTTP_OK,
-			['content-type' => 'application/json']
+			$this->headers
 		);
 	}
 	
@@ -235,7 +237,7 @@ class DeviceController extends AbstractController
 		return new Response(
 			$json,
 			Response::HTTP_OK,
-			['content-type' => 'application/json']
+			$this->headers
 		);
 	}
 }
