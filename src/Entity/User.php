@@ -54,16 +54,22 @@ class User
      */
     private $floor;
     
-    public function __construct($name, $surname, $office, $floor)
+	public function __construct($name, $surname, $office, $floor, $qrCode)
 	{
 		$this->setName($name);
 		$this->setSurname($surname);
 		$this->setOffice($office);
 		$this->setFloor($floor);
-		$this->setQrCode($this->generateRandomString(8));
+		//$this->setQrCode($this->generateRandomString(8));
+		$this->setQrCode($qrCode);
 	}
 	
-	function generateRandomString($length = 10) {
+	public static function getRandomQrCode()
+	{
+		return User::generateRandomString(8);
+	}
+	
+	static function generateRandomString($length = 8) {
 		$characters = '0123456789abcdefghijklmnopqrstuvwxyz';
 		$charactersLength = strlen($characters);
 		$randomString = '';
