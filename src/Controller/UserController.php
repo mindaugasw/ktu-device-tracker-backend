@@ -15,6 +15,8 @@ class UserController extends AbstractController
 {
 	
 	private $serializer;
+
+	private $headers = ['content-type' => 'application/json', 'Access-Control-Allow-Origin' => '*'];
 	
 	public function __construct(SerializerInterface $serializer)
 	{
@@ -38,7 +40,7 @@ class UserController extends AbstractController
 		return new Response(
 			$json,
 			Response::HTTP_OK,
-			['content-type' => 'application/json']
+			$this->headers
 		);
 	}
 	
@@ -49,13 +51,13 @@ class UserController extends AbstractController
 	{
 		$id = $request->request->get('id');
 		if (!isset($id))
-			return new Response(null, Response::HTTP_BAD_REQUEST);
+			return new Response(null, Response::HTTP_BAD_REQUEST, $this->headers);
 		
 		$em = $this->getDoctrine()->getManager();
 		$user = $em->getRepository(user::class)->find($id);
 		
 		if (!isset($user))
-			return new Response(null, Response::HTTP_NOT_FOUND);
+			return new Response(null, Response::HTTP_NOT_FOUND, $this->headers);
 		
 		$name = $request->request->get('name');
 		$surname = $request->request->get('surname');
@@ -70,7 +72,7 @@ class UserController extends AbstractController
 		$em->flush();
 		
 		$json = $this->serializer->serialize($user, 'json', ['groups' => 'group-all']);
-		return new Response($json, Response::HTTP_OK, ['content-type' => 'application/json']);
+		return new Response($json, Response::HTTP_OK, $this->headers);
 	}
 	
 	/**
@@ -84,7 +86,7 @@ class UserController extends AbstractController
 		$floor = $request->request->get('floor');
 		
 		if (!isset($name, $surname, $office, $floor))
-			return new Response(null, Response::HTTP_BAD_REQUEST);
+			return new Response(null, Response::HTTP_BAD_REQUEST, $this->headers);
 		
 		// In case there already is a user with the same QR code, regenerate it
 		do {
@@ -97,7 +99,7 @@ class UserController extends AbstractController
 		$em->flush();
 		
 		$json = $this->serializer->serialize($newUser, 'json', ['groups' => 'group-all']);
-		return new Response($json, Response::HTTP_OK, ['content-type' => 'application/json']);
+		return new Response($json, Response::HTTP_OK, $this->headers);
 	}
 	
 	/**
@@ -108,12 +110,12 @@ class UserController extends AbstractController
 		// Check if parameter is set
 		$id = $request->request->get('id');
 		if (!isset($id))
-			return new Response(null, Response::HTTP_BAD_REQUEST);
+			return new Response(null, Response::HTTP_BAD_REQUEST, $this->headers);
 		
 		// Check if user exists
 		$user = $this->getDoctrine()->getRepository(User::class)->find($id);
 		if (!isset($user))
-			return new Response(null, Response::HTTP_NOT_FOUND);
+			return new Response(null, Response::HTTP_NOT_FOUND, $this->headers);
 		
 		// Remove user from all devices
 		$userDevices = $this->getDoctrine()->getRepository(Device::class)->findBy(['lastUser' => $user]);
@@ -130,7 +132,7 @@ class UserController extends AbstractController
 		$em->remove($user);
 		$em->flush();
 		
-		return new Response(null, Response::HTTP_OK);
+		return new Response(null, Response::HTTP_OK, $this->headers);
 	}
 	
 	/**
@@ -145,7 +147,7 @@ class UserController extends AbstractController
 			->find($id);
 		
 		if (!isset($user))
-			return new Response(null, Response::HTTP_NOT_FOUND);
+			return new Response(null, Response::HTTP_NOT_FOUND, $this->headers);
 		
 		$json = $this->serializer->serialize(
 			$user,
@@ -155,7 +157,7 @@ class UserController extends AbstractController
 		return new Response(
 			$json,
 			Response::HTTP_OK,
-			['content-type' => 'application/json']
+			$this->headers
 		);
 	}
 	
