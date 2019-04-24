@@ -73,10 +73,6 @@ class DeviceController extends AbstractController
 		
 		$history = $this->getDoctrine()->getRepository(UsageEntry::class)->findBy(['device' => $device]);
 		
-		
-		/*if (sizeof($history) )
-			return new Response(null, Response::HTTP_NOT_FOUND);*/
-		
 		$json = $this->serializer->serialize(
 			$history,
 			'json', ['groups' => 'group-all']
@@ -95,26 +91,39 @@ class DeviceController extends AbstractController
 	public function updateDevice(Request $request)
 	{
 		$uniqueId = $request->request->get('uniqueId');
+		$name = $request->request->get('name');
+		$simCard = $request->request->get('simCard');
+		$os = $request->request->get('os');
+		//$enabled = $request->request->get('enabled');
+		
 		if (!isset($uniqueId))
 			return new Response(null, Response::HTTP_BAD_REQUEST, $this->headers);
 		
 		$em = $this->getDoctrine()->getManager();
 		$device = $em->getRepository(Device::class)->findOneBy(['uniqueId' => $uniqueId]);
 		
-		if (!isset($device))
-			return new Response(null, Response::HTTP_NOT_FOUND, $this->headers);
-		
-		$name = $request->request->get('name');
-		$simCard = $request->request->get('simCard');
-		$os = $request->request->get('os');
-		$enabled = $request->request->get('enabled');
+		if (!isset($device)) // Device not found - creating new
+		{
+			if (!isset($name, $os) || ctype_space($uniqueId) || empty($uniqueId))
+				return new Response(null, Response::HTTP_BAD_REQUEST, $this->headers);
+
+			$device = new Device($uniqueId, $name, $os);
+			$device->setLastActivity(new \DateTime('now'));
+			if (isset($simCard))
+				$device->setSimCard(filter_var($simCard, FILTER_VALIDATE_BOOLEAN));
+			
+			$em->persist($device);
+			$em->flush();
+
+			$json = $this->serializer->serialize($device, 'json', ['groups' => 'group-all']);
+			return new Response($json, Response::HTTP_OK, $this->headers);
+		}
 		
 		if (isset($name)) 	 	$device->setName($name);
 		if (isset($simCard))	$device->setSimCard(filter_var($simCard, FILTER_VALIDATE_BOOLEAN));
 		if (isset($os))			$device->setOs($os);
-		if (isset($enabled))
-			$device->setEnabled(filter_var($enabled, FILTER_VALIDATE_BOOLEAN)); // filter_var = bool parse from string
-		
+		//if (isset($enabled))
+		//	$device->setEnabled(filter_var($enabled, FILTER_VALIDATE_BOOLEAN)); // filter_var = bool parse from string
 		
 		$em->flush();
 		
@@ -134,10 +143,13 @@ class DeviceController extends AbstractController
 		$os = $request->request->get('os');
 		$enabled = true; // for now, defaults to true. Should require admin verification later.
 		
-		if (!isset($uniqueId, $name, $simCard, $os, $enabled))
+		if (!isset($uniqueId, $name, $os) || ctype_space($uniqueId) || empty($uniqueId))
 			return new Response(null, Response::HTTP_BAD_REQUEST, $this->headers);
 		
-		$device = new Device($uniqueId, $name, $simCard, $os, $enabled);
+		$device = new Device($uniqueId, $name, $os);
+		$device->setLastActivity(new \DateTime('now'));
+		if (isset($simCard))
+			$device->setSimCard(filter_var($simCard, FILTER_VALIDATE_BOOLEAN));
 		
 		// BAD_REQUEST if there already is a device with same uniqueId
 		$oldDevice = $this->getDoctrine()->getRepository(Device::class)->findOneBy(['uniqueId' => $uniqueId]);

@@ -35,9 +35,7 @@ class Device
     private $name;
     
 	/**
-	 * LastUser value could be also retrieved from UsageHistory, but decided to put it here for performance reasons,
-	 * as otherwise it would be needed to go through UsageHistory and search LastUser for every single device
-	 * everytime device list is displayed.
+	 * LastUser value could be also retrieved from UsageHistory, but decided to put it here as well for performance reasons.
 	 * 
 	 * @ORM\ManyToOne(targetEntity="User")
 	 * @ORM\JoinColumn(name="last_user", referencedColumnName="id", nullable=true)
@@ -54,7 +52,7 @@ class Device
     private $lastActivity;
 	
 	/**
-	 * @ORM\Column(type="boolean")
+	 * @ORM\Column(type="boolean", nullable=true)
 	 * 
 	 * @Groups("group-all")
 	 */
@@ -68,20 +66,19 @@ class Device
 	private $os;
 	
 	/**
-	 * @ORM\Column(type="boolean")
-	 * 
-	 * @Groups("group-all")
+	 * // NOT USED ANYMORE??
+	 * @ORM\Column(type="boolean", nullable=true)
 	 */
 	private $enabled;
 	
 	
-	public function __construct($uniqueId, $name, $simCard, $os, $enabled)
+	public function __construct($uniqueId, $name, $os)
 	{
 		$this->uniqueId = $uniqueId;
 		$this->name = $name;
-		$this->simCard = $simCard;
+		//$this->simCard = $simCard;
 		$this->os = $os;
-		$this->enabled = $enabled;
+		//$this->enabled = $enabled;
 		$this->setLastActivity(new \DateTime('now'));
 	}
 	
