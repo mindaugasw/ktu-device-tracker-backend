@@ -63,11 +63,24 @@ class UserController extends AbstractController
 		$surname = $request->request->get('surname');
 		$office = $request->request->get('office');
 		$floor = $request->request->get('floor');
+		$qrCode = $request->request->get('qrCode');
 		
 		if (isset($name)) 	 	$user->setName($name);
 		if (isset($surname))	$user->setSurname($surname);
 		if (isset($office))		$user->setOffice($office);
 		if (isset($floor))		$user->setFloor($floor);
+		if (isset($qrCode))
+		{
+			$olduser = $this->getDoctrine()->getRepository(user::class)->findOneBy(['qrCode' => $qrCode]);
+			/* Return error if:
+			 *     there already is a user with given QR code and that user isn't the currently updated one
+			 *     given QR code is empty or whitespace-only string
+			 */
+			if ((isset($olduser) && $olduser->getId() != $id) || ctype_space($qrCode) || empty($qrCode))
+				return new Response(null, Response::HTTP_BAD_REQUEST, $this->headers);
+			else
+				$user->setQrCode($qrCode);
+		}
 		
 		$em->flush();
 		
@@ -84,16 +97,30 @@ class UserController extends AbstractController
 		$surname = $request->request->get('surname');
 		$office = $request->request->get('office');
 		$floor = $request->request->get('floor');
+		$qrCode = $request->request->get('qrCode');
 		
 		if (!isset($name, $surname, $office, $floor))
 			return new Response(null, Response::HTTP_BAD_REQUEST, $this->headers);
 		
-		// In case there already is a user with the same QR code, regenerate it
-		do {
-			$newUser = new user($name, $surname, $office, $floor);
-			$olduser = $this->getDoctrine()->getRepository(user::class)->findOneBy(['qrCode' => $newUser->getQrCode()]);			
-		} while (isset($olduser));
-				
+		if (!isset($qrCode)) // If QR code was not set, generate a random one.
+		{
+			// In case there already is a user with the same QR code, regenerate it
+			do
+			{
+				$qrCode = User::getRandomQrCode();
+				$olduser = $this->getDoctrine()->getRepository(user::class)->findOneBy(['qrCode' => $qrCode]);
+			} while (isset($olduser));
+		}
+		else
+		{
+			// Check if given QR code is not already in use by other user
+			$olduser = $this->getDoctrine()->getRepository(user::class)->findOneBy(['qrCode' => $qrCode]);
+			if(isset($olduser) || ctype_space($qrCode) || empty($qrCode))
+				return new Response(null, Response::HTTP_BAD_REQUEST, $this->headers);
+		}
+
+		$newUser = new user($name, $surname, $office, $floor, $qrCode);
+			
 		$em = $this->getDoctrine()->getManager();
 		$em->persist($newUser);
 		$em->flush();
