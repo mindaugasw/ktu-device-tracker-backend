@@ -10,7 +10,12 @@ use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Serializer\SerializerInterface;
+use Swagger\Annotations AS SWG;
+use Nelmio\ApiDocBundle\Annotation\Model;
 
+/**
+ * @Route("/api")
+ */
 class UserController extends AbstractController
 {
 	
@@ -24,7 +29,22 @@ class UserController extends AbstractController
 	}
 	
 	/**
-	 * @Route("/user/all", name="user_list")
+	 * @Route("/user/all", name="user_list", methods={"GET"})
+	 * 
+	 * @SWG\Get(
+	 *     summary="Get users list",
+	 *     description="Gets a list of all users on the system and their info.",
+	 * 	   produces={"application/json"},
+	 *     tags={"Users"},
+	 *     @SWG\Response(
+	 *         response=200,
+	 *         description="Success",
+	 *         @SWG\Schema(
+	 *              type="array",
+	 *              @SWG\Items(ref=@Model(type=User::class))
+	 *         )
+	 *     )
+	 * )
 	 */
 	public function getUsersList()
 	{
@@ -45,7 +65,77 @@ class UserController extends AbstractController
 	}
 	
 	/**
-	 * @Route("user/update", name="user_update")
+	 * @Route("user/update", name="user_update", methods={"POST"})
+	 *
+	 * @SWG\Post(
+	 *     summary="Update user info",
+	 *     description="Update information about specific user: it's name, surname, office, floor, qrCode.",
+	 * 	   produces={"application/json"},
+	 *     tags={"Users"},
+	 *     @SWG\Parameter(
+	 *         name="id",
+	 *         in="formData",
+	 *         description="User ID in the database.",
+	 *         type="integer",
+	 *     	   required=true
+	 *     ),
+	 *     @SWG\Parameter(
+	 *         name="token",
+	 *         in="formData",
+	 *         description="JWT authorization token. NOT YET IMPLEMENTED.",
+	 *         type="string",
+	 *     	   required=true
+	 *     ),
+	 *     @SWG\Parameter(
+	 *         name="name",
+	 *         in="formData",
+	 *         description="Update user's name.",
+	 *         type="string",
+	 *     ),
+	 *     @SWG\Parameter(
+	 *         name="surname",
+	 *         in="formData",
+	 *         description="Update user's surname.",
+	 *         type="string",
+	 *     ),
+	 *     @SWG\Parameter(
+	 *         name="office",
+	 *         in="formData",
+	 *         description="Update user's office.",
+	 *         type="string",
+	 *     ),
+	 *     @SWG\Parameter(
+	 *         name="floor",
+	 *         in="formData",
+	 *         description="Update user's floor.",
+	 *         type="integer",
+	 *     ),
+	 *     @SWG\Parameter(
+	 *         name="qrCode",
+	 *         in="formData",
+	 *         description="Update user's qrCode.",
+	 *         type="string",
+	 *     ),
+	 *     @SWG\Response(
+	 *         response=200,
+	 *         description="Success. Returns updated user.",
+	 *         @SWG\Schema(ref=@Model(type=User::class))
+	 *     ),
+	 *     @SWG\Response(
+	 *         response=400,
+	 *         description="Bad request. Returns if:
+	 * id or JWT not provided
+	 * there already is another user with given qrCode"
+	 *     ),
+	 *     @SWG\Response(
+	 *         response=401,
+	 *         description="Could not authorize (invalid/expired token)."
+	 *     ),
+	 *     @SWG\Response(
+	 *         response=404,
+	 *         description="User not found"
+	 *     ),
+	 * )
 	 */
 	public function updateUser(Request $request)
 	{
@@ -89,7 +179,74 @@ class UserController extends AbstractController
 	}
 	
 	/**
-	 * @Route("/user/new", name="user_new")
+	 * @Route("/user/new", name="user_new", methods={"POST"})
+	 *
+	 * @SWG\Post(
+	 *     summary="Create new user",
+	 *     description="Creates new user.",
+	 * 	   produces={"application/json"},
+	 *     tags={"Users"},
+	 *     @SWG\Parameter(
+	 *         name="token",
+	 *         in="formData",
+	 *         description="JWT authorization token. NOT YET IMPLEMENTED.",
+	 *         type="string",
+	 *     	   required=true
+	 *     ),
+	 *     @SWG\Parameter(
+	 *         name="name",
+	 *         in="formData",
+	 *         description="User's name.",
+	 *         type="string",
+	 *         required=true,
+	 *     ),
+	 *     @SWG\Parameter(
+	 *         name="surname",
+	 *         in="formData",
+	 *         description="User's surname.",
+	 *         type="string",
+	 *         required=true,
+	 *     ),
+	 *     @SWG\Parameter(
+	 *         name="office",
+	 *         in="formData",
+	 *         description="User's office.",
+	 *         type="string",
+	 *         required=true,
+	 *     ),
+	 *     @SWG\Parameter(
+	 *         name="floor",
+	 *         in="formData",
+	 *         description="User's floor.",
+	 *         type="integer",
+	 *         required=true,
+	 *     ),
+	 *     @SWG\Parameter(
+	 *         name="qrCode",
+	 *         in="formData",
+	 *         description="User's qrCode. If not provided, will be generated random string. Can be changed later.
+	               If provided, must be not empty and not whitespace-only.",
+	 *         type="string",
+	 *     ),
+	 *     @SWG\Response(
+	 *         response=200,
+	 *         description="Success. Returns newly created user.",
+	 *         @SWG\Schema(ref=@Model(type=User::class)
+	 * 		   )
+	 *     ),
+	 *     @SWG\Response(
+	 *         response=400,
+	 *         description="Bad request. Returns if:
+	 * name, surname, office, or floor are not provided
+	 * give qrCode is empty or whitespace-only
+	 * there already exists a user with given qrCode"
+	 *     ),
+	 *     @SWG\Response(
+	 *         response=401,
+	 *         description="Could not authorize (invalid/expired token)."
+	 *     ),
+	 * )
+
 	 */
 	public function createNewUser(Request $request)
 	{
@@ -130,7 +287,44 @@ class UserController extends AbstractController
 	}
 	
 	/**
-	 * @Route("/user/delete", name="user_delete")
+	 * @Route("/user/delete", name="user_delete", methods={"POST"})
+	 * 
+	 * @SWG\Post(
+	 *     summary="Delete user",
+	 *     description="Deletes user.",
+	 * 	   produces={"application/json"},
+	 *     tags={"Users"},
+	 *     @SWG\Parameter(
+	 *         name="id",
+	 *         in="formData",
+	 *         description="User ID in the database.",
+	 *         type="integer",
+	 *     	   required=true
+	 *     ),
+	 *     @SWG\Parameter(
+	 *         name="token",
+	 *         in="formData",
+	 *         description="JWT authorization token. NOT YET IMPLEMENTED.",
+	 *         type="string",
+	 *     	   required=true
+	 *     ),
+	 *     @SWG\Response(
+	 *         response=200,
+	 *         description="Success.",
+	 *     ),
+	 *     @SWG\Response(
+	 *         response=400,
+	 *         description="Bad request. Returns if id or JWT not provided."
+	 *     ),
+	 *     @SWG\Response(
+	 *         response=401,
+	 *         description="Could not authorize (invalid/expired token)."
+	 *     ),
+	 *     @SWG\Response(
+	 *         response=404,
+	 *         description="User not found."
+	 *     ),
+	 * )
 	 */
 	public function deleteUser(Request $request)
 	{
@@ -163,9 +357,31 @@ class UserController extends AbstractController
 	}
 	
 	/**
-	 * Must be at the bottom of the controller as otherwise it also catches all other routes.
-	 *
-	 * @Route("user/{id}", name="user_single")
+	 * @Route("user/{id}", name="user_single", methods={"GET"})
+	 * 
+	 * @SWG\Get(
+	 *     summary="Get single user",
+	 *     description="Gets info about a single user.",
+	 * 	   produces={"application/json"},
+	 *     tags={"Users"},
+	 *     @SWG\Parameter(
+	 *         name="id",
+	 *         in="path",
+	 *         description="User ID in the database.",
+	 *         type="integer",
+	 *     ),
+	 *     @SWG\Response(
+	 *         response=200,
+	 *         description="Success",
+	 *         @SWG\Schema(ref=@Model(type=User::class))
+	 *     ),
+	 * 	   @SWG\Response(
+	 *         response=404,
+	 *         description="User not found",
+	 *     )
+	 * )
+	 * 
+	 * Method must be at the bottom of the controller as otherwise it also catches all other routes.
 	 */
 	public function getUserSingle(int $id)
 	{

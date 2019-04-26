@@ -4,9 +4,12 @@ namespace App\Entity;
 
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Serializer\Annotation\Groups;
+use Swagger\Annotations AS SWG;
 
 /**
  * @ORM\Entity(repositoryClass="App\Repository\DeviceRepository")
+ * 
+ * @SWG\Definition()
  */
 class Device 
 {
@@ -17,6 +20,10 @@ class Device
      * @ORM\Column(type="integer")
      * 
      * @Groups("group-all")
+	 * 
+	 * @SWG\Property(
+	 *     description="Device ID in the database."
+	 * )
      */
     private $id;
 	
@@ -24,6 +31,10 @@ class Device
 	 * @ORM\Column(type="string", length=64, name="unique_id", unique=true)
 	 * 
 	 * @Groups("group-all")
+	 *
+	 * @SWG\Property(
+	 *     description="Unique device identifier.",
+	 * )
 	 */
     private $uniqueId;
 	
@@ -31,16 +42,24 @@ class Device
 	 * @ORM\Column(type="string", length=255)
 	 * 
 	 * @Groups("group-all")
+	 * 
+	 * @SWG\Property(
+	 *     description="Device name."
+	 * )
 	 */
     private $name;
     
 	/**
-	 * LastUser value could be also retrieved from UsageHistory, but decided to put it here as well for performance reasons.
-	 * 
 	 * @ORM\ManyToOne(targetEntity="User")
 	 * @ORM\JoinColumn(name="last_user", referencedColumnName="id", nullable=true)
 	 * 
 	 * @Groups("group-all")
+	 * 
+	 * @SWG\Property(
+	 *     description="Last user that took this device."
+	 * )
+	 * 
+	 * LastUser value could be also retrieved from UsageHistory, but decided to put it here as well for performance reasons.
 	 */
     private $lastUser;
 	
@@ -48,6 +67,11 @@ class Device
 	 * @ORM\Column(type="datetime", nullable=true)
 	 * 
 	 * @Groups("group-all")
+	 * 
+	 * @SWG\Property(
+	 *     type="datetime",
+	 *     description="Last time someone used this device."
+	 * )
 	 */
     private $lastActivity;
 	
@@ -55,6 +79,10 @@ class Device
 	 * @ORM\Column(type="boolean", nullable=true)
 	 * 
 	 * @Groups("group-all")
+	 * 
+	 * @SWG\Property(
+	 *     description="Is there SIM card in the device?"
+	 * )
 	 */
 	private $simCard;
 	
@@ -62,12 +90,20 @@ class Device
 	 * @ORM\Column(type="string", length=255)
 	 * 
 	 * @Groups("group-all")
+	 * 
+	 * @SWG\Property(
+	 *     example="Android 9.1"
+	 * )
 	 */
 	private $os;
 	
 	/**
-	 * // NOT USED ANYMORE??
 	 * @ORM\Column(type="boolean", nullable=true)
+	 * 
+	 * @SWG\Property(
+	 *     description="Currently not used.
+	           Is device enabled in the system? If not, won't be shown in devices list."
+	 * )
 	 */
 	private $enabled;
 	
