@@ -4,10 +4,13 @@ namespace App\Entity;
 
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Serializer\Annotation\Groups;
+use Swagger\Annotations AS SWG;
 
 /**
  * @ORM\Entity(repositoryClass="App\Repository\UsageEntryRepository")
  * @ORM\Table(name="usage_history")
+ * 
+ * @SWG\Definition()
  */
 class UsageEntry
 {
@@ -17,6 +20,10 @@ class UsageEntry
      * @ORM\Column(type="integer")
      * 
      * @Groups("group-all")
+	 * 
+	 * @SWG\Property(
+	 *     description="Entry ID in the database."
+	 * )
      */
     private $id;
 
@@ -25,6 +32,10 @@ class UsageEntry
      * @ORM\JoinColumn(name="user", referencedColumnName="id")
 	 * 
 	 * @Groups("group-all")
+	 * 
+	 * @SWG\Property(
+	 *     description="User associated with this entry."
+	 * )
      */
     private $user;
 
@@ -33,6 +44,10 @@ class UsageEntry
      * @ORM\JoinColumn(name="device", referencedColumnName="id")
 	 * 
 	 * @Groups("group-all")
+	 * 
+	 * @SWG\Property(
+	 *     description="Device associated with this entry."
+	 * )
      */
     private $device;
 
@@ -40,6 +55,11 @@ class UsageEntry
      * @ORM\Column(type="datetime")
 	 * 
 	 * @Groups("group-all")
+	 * 
+	 * @SWG\Property(
+	 *     type="datetime",
+	 *     description="When user took device."
+	 * )
      */
     private $timestamp;
 
