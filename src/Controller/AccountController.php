@@ -28,7 +28,7 @@ class AccountController extends AbstractController
 	 * 
 	 * Method is for authorization testing only.
 	 */
-    public function getAccountsList(Request $request, AuthService $authService)
+    /*public function getAccountsList(Request $request, AuthService $authService)
 	{		
 		if (!$authService->verify($request))
 			return new Response(null, Response::HTTP_UNAUTHORIZED, $this->headers);
@@ -40,7 +40,7 @@ class AccountController extends AbstractController
 			Response::HTTP_OK,
 			$this->headers
 		);
-    }
+    }*/
 	
 	/**
 	 * @Route("/login", name="login", methods={"POST"})

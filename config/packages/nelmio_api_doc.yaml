@@ -19,5 +19,7 @@ nelmio_api_doc:
         path_patterns:
             #- ^/api(?!/doc$) # Accepts routes under /api except /api/doc
             #- ^/
-            - ^/(?!(api/doc|account/all)) # All routes except those starting with api/doc
-            #- ^/(?!account/all) # Exlude endpoint used for testing
+            #- ^/(?!(api/doc|account/all)) # All routes except those starting with api/doc
+            - /device
+            - /user
+            - /login
