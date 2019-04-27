@@ -5,6 +5,7 @@ namespace App\Controller;
 use App\Entity\Device;
 use App\Entity\UsageEntry;
 use App\Entity\User;
+use App\Service\AuthService;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Component\HttpFoundation\Request;
@@ -13,12 +14,8 @@ use Symfony\Component\Serializer\SerializerInterface;
 use Swagger\Annotations AS SWG;
 use Nelmio\ApiDocBundle\Annotation\Model;
 
-/**
- * @Route("/api")
- */
 class UserController extends AbstractController
 {
-	
 	private $serializer;
 
 	private $headers = ['content-type' => 'application/json', 'Access-Control-Allow-Origin' => '*'];
@@ -65,7 +62,7 @@ class UserController extends AbstractController
 	}
 	
 	/**
-	 * @Route("user/update", name="user_update", methods={"POST"})
+	 * @Route("/user/update", name="user_update", methods={"POST"})
 	 *
 	 * @SWG\Post(
 	 *     summary="Update user info",
@@ -82,7 +79,7 @@ class UserController extends AbstractController
 	 *     @SWG\Parameter(
 	 *         name="token",
 	 *         in="formData",
-	 *         description="JWT authorization token. NOT YET IMPLEMENTED.",
+	 *         description="JWT authorization token.",
 	 *         type="string",
 	 *     	   required=true
 	 *     ),
@@ -137,8 +134,11 @@ class UserController extends AbstractController
 	 *     ),
 	 * )
 	 */
-	public function updateUser(Request $request)
+	public function updateUser(Request $request, AuthService $authService)
 	{
+		if (!$authService->verify($request))
+			return new Response(null, Response::HTTP_UNAUTHORIZED, $this->headers);
+		
 		$id = $request->request->get('id');
 		if (!isset($id))
 			return new Response(null, Response::HTTP_BAD_REQUEST, $this->headers);
@@ -189,7 +189,7 @@ class UserController extends AbstractController
 	 *     @SWG\Parameter(
 	 *         name="token",
 	 *         in="formData",
-	 *         description="JWT authorization token. NOT YET IMPLEMENTED.",
+	 *         description="JWT authorization token.",
 	 *         type="string",
 	 *     	   required=true
 	 *     ),
@@ -248,8 +248,11 @@ class UserController extends AbstractController
 	 * )
 
 	 */
-	public function createNewUser(Request $request)
+	public function createNewUser(Request $request, AuthService $authService)
 	{
+		if (!$authService->verify($request))
+			return new Response(null, Response::HTTP_UNAUTHORIZED, $this->headers);
+		
 		$name = $request->request->get('name');
 		$surname = $request->request->get('surname');
 		$office = $request->request->get('office');
@@ -304,7 +307,7 @@ class UserController extends AbstractController
 	 *     @SWG\Parameter(
 	 *         name="token",
 	 *         in="formData",
-	 *         description="JWT authorization token. NOT YET IMPLEMENTED.",
+	 *         description="JWT authorization token.",
 	 *         type="string",
 	 *     	   required=true
 	 *     ),
@@ -326,9 +329,11 @@ class UserController extends AbstractController
 	 *     ),
 	 * )
 	 */
-	public function deleteUser(Request $request)
+	public function deleteUser(Request $request, AuthService $authService)
 	{
-		// Check if parameter is set
+		if (!$authService->verify($request))
+			return new Response(null, Response::HTTP_UNAUTHORIZED, $this->headers);
+		
 		$id = $request->request->get('id');
 		if (!isset($id))
 			return new Response(null, Response::HTTP_BAD_REQUEST, $this->headers);
@@ -357,7 +362,7 @@ class UserController extends AbstractController
 	}
 	
 	/**
-	 * @Route("user/{id}", name="user_single", methods={"GET"})
+	 * @Route("/user/{id}", name="user_single", methods={"GET"})
 	 * 
 	 * @SWG\Get(
 	 *     summary="Get single user",

@@ -5,6 +5,7 @@ namespace App\Controller;
 use App\Entity\Device;
 use App\Entity\UsageEntry;
 use App\Entity\User;
+use App\Service\AuthService;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
@@ -13,9 +14,6 @@ use Symfony\Component\Serializer\SerializerInterface;
 use Swagger\Annotations AS SWG;
 use Nelmio\ApiDocBundle\Annotation\Model;
 
-/**
- * @Route("/api")
- */
 class DeviceController extends AbstractController
 {
 	private $serializer;
@@ -145,7 +143,7 @@ class DeviceController extends AbstractController
 	}
 	
 	/**
-	 * @Route("device/update", name="device_update", methods={"POST"})
+	 * @Route("/device/update", name="device_update", methods={"POST"})
 	 * 
 	 * @SWG\Post(
 	 *     summary="Update device info",
@@ -334,7 +332,7 @@ class DeviceController extends AbstractController
 	 *     @SWG\Parameter(
 	 *         name="token",
 	 *         in="formData",
-	 *         description="JWT authorization token. NOT YET IMPLEMENTED.",
+	 *         description="JWT authorization token.",
 	 *         type="string",
 	 *     	   required=true
 	 *     ),
@@ -356,9 +354,11 @@ class DeviceController extends AbstractController
 	 *     ),
 	 * )
 	 */
-	public function deleteDevice(Request $request)
+	public function deleteDevice(Request $request, AuthService $authService)
 	{
-		// Check if argument is set
+		if (!$authService->verify($request))
+			return new Response(null, Response::HTTP_UNAUTHORIZED, $this->headers);
+		
 		$uniqueId = $request->request->get('uniqueId');
 		if (!isset($uniqueId))
 			return new Response(null, Response::HTTP_BAD_REQUEST, $this->headers);
@@ -454,7 +454,7 @@ class DeviceController extends AbstractController
 	}
 	
 	/**
-	 * @Route("device/{deviceId}", name="device_single", methods={"GET"})
+	 * @Route("/device/{deviceId}", name="device_single", methods={"GET"})
 	 * 
 	 * @SWG\Get(
 	 *     summary="Get single device",
