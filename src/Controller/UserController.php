@@ -14,9 +14,6 @@ use Symfony\Component\Serializer\SerializerInterface;
 use Swagger\Annotations AS SWG;
 use Nelmio\ApiDocBundle\Annotation\Model;
 
-/**
- * @Route("/api")
- */
 class UserController extends AbstractController
 {
 	private $serializer;

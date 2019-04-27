@@ -12,9 +12,6 @@ use Symfony\Component\Serializer\SerializerInterface;
 use Swagger\Annotations AS SWG;
 use Nelmio\ApiDocBundle\Annotation\Model;
 
-/**
- * @Route("/api")
- */
 class AccountController extends AbstractController
 {	
 	private $serializer;
@@ -32,27 +29,9 @@ class AccountController extends AbstractController
 	 * Method is for authorization testing only.
 	 */
     public function getAccountsList(Request $request, AuthService $authService)
-	{	
-		//$authHeader = $request->headers->get('Authorization');
-		
-		//$token = $request->query->get('token');
-		
-		//if (!isset($authHeader))
-		//if (!isset($token))
-		//	return new Response(null, Response::HTTP_BAD_REQUEST, $this->headers);
-	
-		//$token = explode(' ', $authHeader)[1];
-		/*try
-		{
-			$decoded = JWT::decode($token, self::JWT_KEY, ['HS256']);
-		} catch (\Exception $ex) {
-			return new Response($ex->getMessage(), Response::HTTP_UNAUTHORIZED, $this->headers);
-		}*/
-		
+	{		
 		if (!$authService->verify($request))
 			return new Response(null, Response::HTTP_UNAUTHORIZED, $this->headers);
-		
-		
 		
 		$accounts = $this->getDoctrine()->getRepository(Account::class)->findAll();
 		$json = $this->serializer->serialize($accounts, 'json', ['groups' => 'group-all']);	
