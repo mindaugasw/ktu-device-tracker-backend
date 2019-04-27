@@ -9,7 +9,12 @@ use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Component\Serializer\SerializerInterface;
 use Firebase\JWT\JWT;
+use Swagger\Annotations AS SWG;
+use Nelmio\ApiDocBundle\Annotation\Model;
 
+/**
+ * @Route("/api")
+ */
 class AccountController extends AbstractController
 {
 	private const JWT_KEY = "vlEIkJeG3soQ4Ft24ocJ58ZUXgjsssIx";
@@ -24,16 +29,19 @@ class AccountController extends AbstractController
 	}
 	
     /**
-     * @Route("/account/all", name="account_list")
-     */
+     * @Route("/account/all", name="account_list", methods={"GET"})
+	 */
     public function getAccountsList(Request $request)
 	{	
-		$authHeader = $request->headers->get('Authorization');
+		//$authHeader = $request->headers->get('Authorization');
 		
-		if (!isset($authHeader))
+		$token = $request->query->get('token');
+		
+		//if (!isset($authHeader))
+		if (!isset($token))
 			return new Response(null, Response::HTTP_BAD_REQUEST, $this->headers);
 	
-		$token = explode(' ', $authHeader)[1];
+		//$token = explode(' ', $authHeader)[1];
 		try
 		{
 			$decoded = JWT::decode($token, self::JWT_KEY, ['HS256']);
@@ -51,7 +59,40 @@ class AccountController extends AbstractController
     }
 	
 	/**
-	 * @Route("/login", name="login")
+	 * @Route("/login", name="login", methods={"POST"})
+	 * 
+	 * @SWG\Post(
+	 *     summary="Log in",
+	 *     description="Log in to the system and get Json Web Token (JWT) that is used for authorization on admin-only endpoints.",
+	 * 	   produces={"application/json"},
+	 *     tags={"Other"},
+	 *     @SWG\Parameter(
+	 *         name="username",
+	 *         in="formData",
+	 *         description="Username.",
+	 *         type="string",
+	 *     	   required=true,
+	 *     ),
+	 *     @SWG\Parameter(
+	 *         name="password",
+	 *         in="formData",
+	 *         description="Password.",
+	 *         type="string",
+	 *     	   required=true,
+	 *     ),
+	 *     @SWG\Response(
+	 *         response=200,
+	 *         description="Success. Returns Json Web Token (JWT). Info in the payload: token issue timestamp, expiration timestamp, user's ID and username.",
+	 *     ),
+	 * 	   @SWG\Response(
+	 *         response=400,
+	 *         description="Username or password not provided",
+	 *     ),
+	 *     @SWG\Response(
+	 *         response=401,
+	 *         description="Wrong username and/or password.",
+	 *     )
+	 * )
 	 */
     public function logIn(Request $request)
 	{
@@ -71,7 +112,7 @@ class AccountController extends AbstractController
 		
 		$token = [
 			'iat' => time(),
-			'exp' => time() + 600,
+			'exp' => time() + 3600,
 			'data' => [
 				'id' => $account->getId(),
 				'username' => $account->getUsername()

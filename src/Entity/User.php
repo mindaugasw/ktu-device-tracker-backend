@@ -4,9 +4,12 @@ namespace App\Entity;
 
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Serializer\Annotation\Groups;
+use Swagger\Annotations AS SWG;
 
 /**
  * @ORM\Entity(repositoryClass="App\Repository\UserRepository")
+ * 
+ * @SWG\Definition()
  */
 class User
 {
@@ -16,6 +19,10 @@ class User
      * @ORM\Column(type="integer")
      * 
      * @Groups("group-all")
+	 * 
+	 * @SWG\Property(
+	 *     description="User ID in the database."
+	 * )
      */
     private $id;
 	
@@ -23,6 +30,10 @@ class User
 	 * @ORM\Column(type="string", length=64, name="qr_code", unique=true)
 	 * 
 	 * @Groups("group-all")
+	 * 
+	 * @SWG\Property(
+	 *     description="User's QR code."
+	 * )
 	 */
 	private $qrCode;
     
@@ -30,6 +41,10 @@ class User
      * @ORM\Column(type="string", length=255)
 	 * 
 	 * @Groups("group-all")
+	 * 
+	 * @SWG\Property(
+	 *     description="User's name."
+	 * )
      */
     private $name;
 
@@ -37,6 +52,10 @@ class User
      * @ORM\Column(type="string", length=255)
 	 * 
 	 * @Groups("group-all")
+	 * 
+	 * @SWG\Property(
+	 *     description="User's surname."
+	 * )
      */
     private $surname;
     
@@ -44,6 +63,11 @@ class User
      * @ORM\Column(type="string", length=255)
 	 * 
 	 * @Groups("group-all")
+	 * 
+	 * @SWG\Property(
+	 *     description="Office that this user works in.",
+	 *     example="Vilnius"
+	 * )
      */
     private $office;
 
@@ -51,6 +75,10 @@ class User
      * @ORM\Column(type="integer")
 	 * 
 	 * @Groups("group-all")
+	 * 
+	 * @SWG\Property(
+	 *     description="Floor that this user works at."
+	 * )
      */
     private $floor;
     
