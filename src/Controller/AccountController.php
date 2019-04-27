@@ -3,12 +3,12 @@
 namespace App\Controller;
 
 use App\Entity\Account;
+use App\Service\AuthService;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Component\Serializer\SerializerInterface;
-use Firebase\JWT\JWT;
 use Swagger\Annotations AS SWG;
 use Nelmio\ApiDocBundle\Annotation\Model;
 
@@ -16,9 +16,7 @@ use Nelmio\ApiDocBundle\Annotation\Model;
  * @Route("/api")
  */
 class AccountController extends AbstractController
-{
-	private const JWT_KEY = "vlEIkJeG3soQ4Ft24ocJ58ZUXgjsssIx";
-	
+{	
 	private $serializer;
 	
 	private $headers = ['content-type' => 'application/json', 'Access-Control-Allow-Origin' => '*'];
@@ -30,24 +28,31 @@ class AccountController extends AbstractController
 	
     /**
      * @Route("/account/all", name="account_list", methods={"GET"})
+	 * 
+	 * Method is for authorization testing only.
 	 */
-    public function getAccountsList(Request $request)
+    public function getAccountsList(Request $request, AuthService $authService)
 	{	
 		//$authHeader = $request->headers->get('Authorization');
 		
-		$token = $request->query->get('token');
+		//$token = $request->query->get('token');
 		
 		//if (!isset($authHeader))
-		if (!isset($token))
-			return new Response(null, Response::HTTP_BAD_REQUEST, $this->headers);
+		//if (!isset($token))
+		//	return new Response(null, Response::HTTP_BAD_REQUEST, $this->headers);
 	
 		//$token = explode(' ', $authHeader)[1];
-		try
+		/*try
 		{
 			$decoded = JWT::decode($token, self::JWT_KEY, ['HS256']);
 		} catch (\Exception $ex) {
 			return new Response($ex->getMessage(), Response::HTTP_UNAUTHORIZED, $this->headers);
-		}
+		}*/
+		
+		if (!$authService->verify($request))
+			return new Response(null, Response::HTTP_UNAUTHORIZED, $this->headers);
+		
+		
 		
 		$accounts = $this->getDoctrine()->getRepository(Account::class)->findAll();
 		$json = $this->serializer->serialize($accounts, 'json', ['groups' => 'group-all']);	
@@ -94,7 +99,7 @@ class AccountController extends AbstractController
 	 *     )
 	 * )
 	 */
-    public function logIn(Request $request)
+    public function logIn(Request $request, AuthService $authService)
 	{
 		$username = $request->request->get('username');
 		$password = $request->request->get('password');
@@ -109,17 +114,7 @@ class AccountController extends AbstractController
 			return new Response(null, Response::HTTP_UNAUTHORIZED, $this->headers);
 		
 		// Credentials are valid - generate JWT
-		
-		$token = [
-			'iat' => time(),
-			'exp' => time() + 3600,
-			'data' => [
-				'id' => $account->getId(),
-				'username' => $account->getUsername()
-			]
-		];
-		
-		$jwt = JWT::encode($token, self::JWT_KEY);
+		$jwt = $authService->getJWT($account->getId(), $account->getUsername());		
 		
 		return new Response(
 			$jwt,
