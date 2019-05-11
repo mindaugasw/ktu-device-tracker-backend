@@ -5,6 +5,7 @@ namespace App\Controller;
 use App\Entity\Device;
 use App\Entity\UsageEntry;
 use App\Entity\User;
+use App\Entity\PaginatedResponse;
 use App\Service\AuthService;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
@@ -69,29 +70,54 @@ class DeviceController extends AbstractController
 	 *     description="Gets combined usage history for all devices in the system.",
 	 * 	   produces={"application/json"},
 	 *     tags={"Devices"},
+	 *     @SWG\Parameter(
+	 *         name="page",
+	 *         in="query",
+	 *         description="Page number. Defaults to 1.",
+	 *         type="integer",
+	 *         required=false
+	 *     ),
+	 *     @SWG\Parameter(
+	 *         name="perPage",
+	 *         in="query",
+	 *         description="Number of items per page. Defaults to 20.",
+	 *         type="integer",
+	 *         required=false
+	 *     ),
 	 *     @SWG\Response(
 	 *         response=200,
 	 *         description="Success",
-	 *         @SWG\Schema(
-	 *     			type="array",
-	 *     			@SWG\Items(ref=@Model(type=UsageEntry::class))
-	 * 		   )
+	 *         @SWG\Schema(ref=@Model(type=PaginatedResponse::class))
 	 *     )
 	 * )
 	 */
-	public function getAllDevicesHistory()
+	public function getAllDevicesHistory(Request $request)
 	{
-		$history = $this->getDoctrine()->getRepository(UsageEntry::class)->findAll();		
+		$page = $request->query->get('page');
+		$perPage = $request->query->get('perPage');
+
+		if (!isset($page) || !is_numeric($page) || $page < 1)
+			$page = 1;
+
+		if (!isset($perPage) || !is_numeric($perPage) || $perPage < 1)
+			$perPage = 20;
+
+		//$history = $this->getDoctrine()->getRepository(UsageEntry::class)->findAll();
+		$totalCount = $this->getDoctrine()->getRepository(UsageEntry::class)->count([]);
+		$history = $this->getDoctrine()->getRepository(UsageEntry::class)->findPaginatedUsageHistory_all($page, $perPage, $totalCount);
+		
+		$paginated = new PaginatedResponse($page, $perPage, ceil($totalCount / $perPage), count($history),  $totalCount, $history);
+		
 		$json = $this->serializer->serialize(
-			$history, 
+			$paginated,
 			'json', ['groups' => 'group-all']
 		);
-		
+
 		return new Response(
-			$json, 
+			$json,
 			Response::HTTP_OK,
 			$this->headers
-		);		
+		);
 	}
 
 	/**
@@ -108,13 +134,24 @@ class DeviceController extends AbstractController
 	 *         description="Device unique identifier (uniqueId).",
 	 *         type="string",
 	 *     ),
+	 *     @SWG\Parameter(
+	 *         name="page",
+	 *         in="query",
+	 *         description="Page number. Defaults to 1.",
+	 *         type="integer",
+	 *         required=false
+	 *     ),
+	 *     @SWG\Parameter(
+	 *         name="perPage",
+	 *         in="query",
+	 *         description="Number of items per page. Defaults to 20.",
+	 *         type="integer",
+	 *         required=false
+	 *     ),
 	 *     @SWG\Response(
 	 *         response=200,
 	 *         description="Success",
-	 *         @SWG\Schema(
-	 *     			type="array",
-	 *     			@SWG\Items(ref=@Model(type=UsageEntry::class))
-	 * 		   )
+	 *         @SWG\Schema(ref=@Model(type=PaginatedResponse::class))
 	 *     ),
 	 *     @SWG\Response(
 	 *         response=404,
@@ -122,16 +159,30 @@ class DeviceController extends AbstractController
 	 *     )
 	 * )	 
 	 */
-	public function getSingleDeviceHistory(string $deviceId)
-	{
-		$device = $this->getDoctrine()->getRepository(Device::class)->findBy(['uniqueId' => $deviceId]);
-		if (sizeof($device) === 0)
+	public function getSingleDeviceHistory(Request $request, string $deviceId)
+	{		
+		$device = $this->getDoctrine()->getRepository(Device::class)->findOneBy(['uniqueId' => $deviceId]);
+		//if (sizeof($device) === 0)
+		if (!isset($device))
 			return new Response(null, Response::HTTP_NOT_FOUND, $this->headers);
+
 		
-		$history = $this->getDoctrine()->getRepository(UsageEntry::class)->findBy(['device' => $device]);
+		$page = $request->query->get('page');
+		$perPage = $request->query->get('perPage');
+
+		if (!isset($page) || !is_numeric($page) || $page < 1)
+			$page = 1;
+
+		if (!isset($perPage) || !is_numeric($perPage) || $perPage < 1)
+			$perPage = 20;
+		
+		$totalCount = $this->getDoctrine()->getRepository(UsageEntry::class)->count(['device' => $device->getId()]);
+		$history = $this->getDoctrine()->getRepository(UsageEntry::class)->findPaginatedUsageHistory_single($device, $page, $perPage, $totalCount);
+		
+		$paginated = new PaginatedResponse($page, $perPage, ceil($totalCount / $perPage), count($history), $totalCount, $history);
 		
 		$json = $this->serializer->serialize(
-			$history,
+			$paginated,
 			'json', ['groups' => 'group-all']
 		);
 		
