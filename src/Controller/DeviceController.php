@@ -247,7 +247,6 @@ class DeviceController extends AbstractController
 		$name = $request->request->get('name');
 		$simCard = $request->request->get('simCard');
 		$os = $request->request->get('os');
-		//$enabled = $request->request->get('enabled');
 		
 		if (!isset($uniqueId))
 			return new Response(null, Response::HTTP_BAD_REQUEST, $this->headers);
@@ -274,8 +273,6 @@ class DeviceController extends AbstractController
 		if (isset($name)) 	 	$device->setName($name);
 		if (isset($simCard))	$device->setSimCard($simCard);
 		if (isset($os))			$device->setOs($os);
-		//if (isset($enabled))
-		//	$device->setEnabled(filter_var($enabled, FILTER_VALIDATE_BOOLEAN)); // filter_var = bool parse from string
 		
 		$em->flush();
 		
@@ -340,7 +337,6 @@ class DeviceController extends AbstractController
 		$name = $request->request->get('name');
 		$simCard = $request->request->get('simCard');
 		$os = $request->request->get('os');
-		//$enabled = true; // for now, defaults to true. Should require admin verification later.
 		
 		if (!isset($uniqueId, $name, $os) || ctype_space($uniqueId) || empty($uniqueId))
 			return new Response(null, Response::HTTP_BAD_REQUEST, $this->headers);
