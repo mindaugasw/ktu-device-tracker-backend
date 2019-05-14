@@ -76,12 +76,12 @@ class Device
     private $lastActivity;
 	
 	/**
-	 * @ORM\Column(type="boolean", nullable=true)
+	 * @ORM\Column(type="string", nullable=true)
 	 * 
 	 * @Groups("group-all")
 	 * 
 	 * @SWG\Property(
-	 *     description="Is there SIM card in the device?"
+	 *     description="SIM card status or phone number."
 	 * )
 	 */
 	private $simCard;
@@ -172,12 +172,12 @@ class Device
 		return $this;
 	}
 	
-	public function getSimCard(): ?bool 
+	public function getSimCard(): ?string 
 	{
 		return $this->simCard;
 	}
 	
-	public function setSimCard(bool $simCard): self
+	public function setSimCard(string $simCard): self
 	{
 		$this->simCard = $simCard;
 			

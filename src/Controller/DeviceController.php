@@ -198,8 +198,8 @@ class DeviceController extends AbstractController
 	 * 
 	 * @SWG\Post(
 	 *     summary="Update device info",
-	 *     description="Update information about specific device: it's name, SIM card status, or OS.
-				If there is no device with given uniqueId, a new device is created. In that case device name, SIM card status, and OS must all be provided.",
+	 *     description="Update information about specific device: it's name, SIM card status or phone number, or OS.
+				If there is no device with given uniqueId, a new device is created. In that case device name and OS must provided.",
 	 * 	   produces={"application/json"},
 	 *     tags={"Devices"},
 	 *     @SWG\Parameter(
@@ -218,8 +218,8 @@ class DeviceController extends AbstractController
 	 *     @SWG\Parameter(
 	 *         name="simCard",
 	 *         in="formData",
-	 *         description="Updates SIM card status.",
-	 *         type="boolean",
+	 *         description="Updates SIM card status or phone number.",
+	 *         type="string",
 	 *     ),
 	 *     @SWG\Parameter(
 	 *         name="os",
@@ -262,8 +262,7 @@ class DeviceController extends AbstractController
 
 			$device = new Device($uniqueId, $name, $os);
 			$device->setLastActivity(new \DateTime('now'));
-			if (isset($simCard))
-				$device->setSimCard(filter_var($simCard, FILTER_VALIDATE_BOOLEAN));
+			if (isset($simCard)) $device->setSimCard($simCard);
 			
 			$em->persist($device);
 			$em->flush();
@@ -273,7 +272,7 @@ class DeviceController extends AbstractController
 		}
 		
 		if (isset($name)) 	 	$device->setName($name);
-		if (isset($simCard))	$device->setSimCard(filter_var($simCard, FILTER_VALIDATE_BOOLEAN));
+		if (isset($simCard))	$device->setSimCard($simCard);
 		if (isset($os))			$device->setOs($os);
 		//if (isset($enabled))
 		//	$device->setEnabled(filter_var($enabled, FILTER_VALIDATE_BOOLEAN)); // filter_var = bool parse from string
@@ -348,8 +347,7 @@ class DeviceController extends AbstractController
 		
 		$device = new Device($uniqueId, $name, $os);
 		$device->setLastActivity(new \DateTime('now'));
-		if (isset($simCard))
-			$device->setSimCard(filter_var($simCard, FILTER_VALIDATE_BOOLEAN));
+		if (isset($simCard)) $device->setSimCard($simCard);
 		
 		// BAD_REQUEST if there already is a device with same uniqueId
 		$oldDevice = $this->getDoctrine()->getRepository(Device::class)->findOneBy(['uniqueId' => $uniqueId]);
