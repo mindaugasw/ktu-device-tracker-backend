@@ -28,8 +28,6 @@ class Account
 
     /**
      * @ORM\Column(type="string", length=64)
-	 * 
-	 * @Groups("group-all")
      */
     private $password;
 

@@ -26,10 +26,15 @@ services:
     # add more service definitions when explicit configuration is needed
     # please note that last definitions always *replace* previous ones
 
+    datetime_normalizer:
+        class: Symfony\Component\Serializer\Normalizer\DateTimeNormalizer
+        arguments: ['Y-m-d H:i:s']
+        public: false
+        tags: [serializer.normalizer]
+
     get_set_method_normalizer:
         class: Symfony\Component\Serializer\Normalizer\GetSetMethodNormalizer
         public: false
         tags: [serializer.normalizer]
         
-    # GetSetMethodNormalizer is a faster alternative to the ObjectNormalizer when data objects always
-    # use getters, setters, issers (isXxx()) or hassers (hasXxx()) to read/set properties.
+    # GetSetMethodNormalizer is a faster alternative to the ObjectNormalizer

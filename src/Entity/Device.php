@@ -76,12 +76,12 @@ class Device
     private $lastActivity;
 	
 	/**
-	 * @ORM\Column(type="boolean", nullable=true)
+	 * @ORM\Column(type="string", nullable=true)
 	 * 
 	 * @Groups("group-all")
 	 * 
 	 * @SWG\Property(
-	 *     description="Is there SIM card in the device?"
+	 *     description="SIM card status or phone number."
 	 * )
 	 */
 	private $simCard;
@@ -97,16 +97,6 @@ class Device
 	 */
 	private $os;
 	
-	/**
-	 * @ORM\Column(type="boolean", nullable=true)
-	 * 
-	 * @SWG\Property(
-	 *     description="Currently not used.
-	           Is device enabled in the system? If not, won't be shown in devices list."
-	 * )
-	 */
-	private $enabled;
-	
 	
 	public function __construct($uniqueId, $name, $os)
 	{
@@ -114,7 +104,6 @@ class Device
 		$this->name = $name;
 		//$this->simCard = $simCard;
 		$this->os = $os;
-		//$this->enabled = $enabled;
 		$this->setLastActivity(new \DateTime('now'));
 	}
 	
@@ -172,12 +161,12 @@ class Device
 		return $this;
 	}
 	
-	public function getSimCard(): ?bool 
+	public function getSimCard(): ?string 
 	{
 		return $this->simCard;
 	}
 	
-	public function setSimCard(bool $simCard): self
+	public function setSimCard(string $simCard): self
 	{
 		$this->simCard = $simCard;
 			
@@ -195,17 +184,4 @@ class Device
 			
 		return $this;
 	}
-	
-	public function isEnabled(): bool 
-	{
-		return $this->enabled;
-	}
-	
-	public function setEnabled(bool $enabled): self 
-	{
-		$this->enabled = $enabled;
-		
-		return $this;
-	}
-
 }

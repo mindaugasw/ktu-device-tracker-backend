@@ -71,7 +71,7 @@ class User
      */
     private $office;
 
-    /**
+    /*
      * @ORM\Column(type="integer")
 	 * 
 	 * @Groups("group-all")
@@ -80,14 +80,14 @@ class User
 	 *     description="Floor that this user works at."
 	 * )
      */
-    private $floor;
+    //private $floor;
     
-	public function __construct($name, $surname, $office, $floor, $qrCode)
+	public function __construct($name, $surname, $office, $qrCode)
 	{
 		$this->setName($name);
 		$this->setSurname($surname);
 		$this->setOffice($office);
-		$this->setFloor($floor);
+		//$this->setFloor($floor);
 		//$this->setQrCode($this->generateRandomString(8));
 		$this->setQrCode($qrCode);
 	}
@@ -160,7 +160,7 @@ class User
         return $this;
     }
 
-    public function getFloor(): ?int
+    /*public function getFloor(): ?int
     {
         return $this->floor;
     }
@@ -170,6 +170,6 @@ class User
         $this->floor = $floor;
 
         return $this;
-    }
+    }*/
 	
 }
