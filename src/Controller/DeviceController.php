@@ -280,7 +280,6 @@ class DeviceController extends AbstractController
 		
 		$em->flush();
 		
-		// NOT WORKING: lastActivity is missing in result json. There's some difficulties serializing DateTime type.
 		$json = $this->serializer->serialize($device, 'json', ['groups' => 'group-all']);		
 		return new Response($json, Response::HTTP_OK, $this->headers);
 	}
@@ -342,7 +341,7 @@ class DeviceController extends AbstractController
 		$name = $request->request->get('name');
 		$simCard = $request->request->get('simCard');
 		$os = $request->request->get('os');
-		$enabled = true; // for now, defaults to true. Should require admin verification later.
+		//$enabled = true; // for now, defaults to true. Should require admin verification later.
 		
 		if (!isset($uniqueId, $name, $os) || ctype_space($uniqueId) || empty($uniqueId))
 			return new Response(null, Response::HTTP_BAD_REQUEST, $this->headers);

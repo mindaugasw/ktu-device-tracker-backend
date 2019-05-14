@@ -97,7 +97,7 @@ class Device
 	 */
 	private $os;
 	
-	/**
+	/*
 	 * @ORM\Column(type="boolean", nullable=true)
 	 * 
 	 * @SWG\Property(
@@ -105,7 +105,7 @@ class Device
 	           Is device enabled in the system? If not, won't be shown in devices list."
 	 * )
 	 */
-	private $enabled;
+	//private $enabled;
 	
 	
 	public function __construct($uniqueId, $name, $os)
@@ -196,7 +196,7 @@ class Device
 		return $this;
 	}
 	
-	public function isEnabled(): bool 
+	/*public function isEnabled(): bool 
 	{
 		return $this->enabled;
 	}
@@ -206,6 +206,6 @@ class Device
 		$this->enabled = $enabled;
 		
 		return $this;
-	}
+	}*/
 
 }
