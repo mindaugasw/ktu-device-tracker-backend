@@ -5,6 +5,7 @@ namespace App\Controller;
 use App\Entity\Device;
 use App\Entity\UsageEntry;
 use App\Entity\User;
+use App\Entity\PaginatedResponse;
 use App\Service\AuthService;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
@@ -69,29 +70,54 @@ class DeviceController extends AbstractController
 	 *     description="Gets combined usage history for all devices in the system.",
 	 * 	   produces={"application/json"},
 	 *     tags={"Devices"},
+	 *     @SWG\Parameter(
+	 *         name="page",
+	 *         in="query",
+	 *         description="Page number. Defaults to 1.",
+	 *         type="integer",
+	 *         required=false
+	 *     ),
+	 *     @SWG\Parameter(
+	 *         name="perPage",
+	 *         in="query",
+	 *         description="Number of items per page. Defaults to 20.",
+	 *         type="integer",
+	 *         required=false
+	 *     ),
 	 *     @SWG\Response(
 	 *         response=200,
 	 *         description="Success",
-	 *         @SWG\Schema(
-	 *     			type="array",
-	 *     			@SWG\Items(ref=@Model(type=UsageEntry::class))
-	 * 		   )
+	 *         @SWG\Schema(ref=@Model(type=PaginatedResponse::class))
 	 *     )
 	 * )
 	 */
-	public function getAllDevicesHistory()
+	public function getAllDevicesHistory(Request $request)
 	{
-		$history = $this->getDoctrine()->getRepository(UsageEntry::class)->findAll();		
+		$page = $request->query->get('page');
+		$perPage = $request->query->get('perPage');
+
+		if (!isset($page) || !is_numeric($page) || $page < 1)
+			$page = 1;
+
+		if (!isset($perPage) || !is_numeric($perPage) || $perPage < 1)
+			$perPage = 20;
+
+		//$history = $this->getDoctrine()->getRepository(UsageEntry::class)->findAll();
+		$totalCount = $this->getDoctrine()->getRepository(UsageEntry::class)->count([]);
+		$history = $this->getDoctrine()->getRepository(UsageEntry::class)->findPaginatedUsageHistory_all($page, $perPage, $totalCount);
+		
+		$paginated = new PaginatedResponse($page, $perPage, ceil($totalCount / $perPage), count($history),  $totalCount, $history);
+		
 		$json = $this->serializer->serialize(
-			$history, 
+			$paginated,
 			'json', ['groups' => 'group-all']
 		);
-		
+
 		return new Response(
-			$json, 
+			$json,
 			Response::HTTP_OK,
 			$this->headers
-		);		
+		);
 	}
 
 	/**
@@ -108,13 +134,24 @@ class DeviceController extends AbstractController
 	 *         description="Device unique identifier (uniqueId).",
 	 *         type="string",
 	 *     ),
+	 *     @SWG\Parameter(
+	 *         name="page",
+	 *         in="query",
+	 *         description="Page number. Defaults to 1.",
+	 *         type="integer",
+	 *         required=false
+	 *     ),
+	 *     @SWG\Parameter(
+	 *         name="perPage",
+	 *         in="query",
+	 *         description="Number of items per page. Defaults to 20.",
+	 *         type="integer",
+	 *         required=false
+	 *     ),
 	 *     @SWG\Response(
 	 *         response=200,
 	 *         description="Success",
-	 *         @SWG\Schema(
-	 *     			type="array",
-	 *     			@SWG\Items(ref=@Model(type=UsageEntry::class))
-	 * 		   )
+	 *         @SWG\Schema(ref=@Model(type=PaginatedResponse::class))
 	 *     ),
 	 *     @SWG\Response(
 	 *         response=404,
@@ -122,16 +159,30 @@ class DeviceController extends AbstractController
 	 *     )
 	 * )	 
 	 */
-	public function getSingleDeviceHistory(string $deviceId)
-	{
-		$device = $this->getDoctrine()->getRepository(Device::class)->findBy(['uniqueId' => $deviceId]);
-		if (sizeof($device) === 0)
+	public function getSingleDeviceHistory(Request $request, string $deviceId)
+	{		
+		$device = $this->getDoctrine()->getRepository(Device::class)->findOneBy(['uniqueId' => $deviceId]);
+		//if (sizeof($device) === 0)
+		if (!isset($device))
 			return new Response(null, Response::HTTP_NOT_FOUND, $this->headers);
+
 		
-		$history = $this->getDoctrine()->getRepository(UsageEntry::class)->findBy(['device' => $device]);
+		$page = $request->query->get('page');
+		$perPage = $request->query->get('perPage');
+
+		if (!isset($page) || !is_numeric($page) || $page < 1)
+			$page = 1;
+
+		if (!isset($perPage) || !is_numeric($perPage) || $perPage < 1)
+			$perPage = 20;
+		
+		$totalCount = $this->getDoctrine()->getRepository(UsageEntry::class)->count(['device' => $device->getId()]);
+		$history = $this->getDoctrine()->getRepository(UsageEntry::class)->findPaginatedUsageHistory_single($device, $page, $perPage, $totalCount);
+		
+		$paginated = new PaginatedResponse($page, $perPage, ceil($totalCount / $perPage), count($history), $totalCount, $history);
 		
 		$json = $this->serializer->serialize(
-			$history,
+			$paginated,
 			'json', ['groups' => 'group-all']
 		);
 		
@@ -147,8 +198,8 @@ class DeviceController extends AbstractController
 	 * 
 	 * @SWG\Post(
 	 *     summary="Update device info",
-	 *     description="Update information about specific device: it's name, SIM card status, or OS.
-				If there is no device with given uniqueId, a new device is created. In that case device name, SIM card status, and OS must all be provided.",
+	 *     description="Update information about specific device: it's name, SIM card status or phone number, or OS.
+				If there is no device with given uniqueId, a new device is created. In that case device name and OS must provided.",
 	 * 	   produces={"application/json"},
 	 *     tags={"Devices"},
 	 *     @SWG\Parameter(
@@ -167,8 +218,8 @@ class DeviceController extends AbstractController
 	 *     @SWG\Parameter(
 	 *         name="simCard",
 	 *         in="formData",
-	 *         description="Updates SIM card status.",
-	 *         type="boolean",
+	 *         description="Updates SIM card status or phone number.",
+	 *         type="string",
 	 *     ),
 	 *     @SWG\Parameter(
 	 *         name="os",
@@ -196,7 +247,6 @@ class DeviceController extends AbstractController
 		$name = $request->request->get('name');
 		$simCard = $request->request->get('simCard');
 		$os = $request->request->get('os');
-		//$enabled = $request->request->get('enabled');
 		
 		if (!isset($uniqueId))
 			return new Response(null, Response::HTTP_BAD_REQUEST, $this->headers);
@@ -211,8 +261,7 @@ class DeviceController extends AbstractController
 
 			$device = new Device($uniqueId, $name, $os);
 			$device->setLastActivity(new \DateTime('now'));
-			if (isset($simCard))
-				$device->setSimCard(filter_var($simCard, FILTER_VALIDATE_BOOLEAN));
+			if (isset($simCard)) $device->setSimCard($simCard);
 			
 			$em->persist($device);
 			$em->flush();
@@ -222,14 +271,11 @@ class DeviceController extends AbstractController
 		}
 		
 		if (isset($name)) 	 	$device->setName($name);
-		if (isset($simCard))	$device->setSimCard(filter_var($simCard, FILTER_VALIDATE_BOOLEAN));
+		if (isset($simCard))	$device->setSimCard($simCard);
 		if (isset($os))			$device->setOs($os);
-		//if (isset($enabled))
-		//	$device->setEnabled(filter_var($enabled, FILTER_VALIDATE_BOOLEAN)); // filter_var = bool parse from string
 		
 		$em->flush();
 		
-		// NOT WORKING: lastActivity is missing in result json. There's some difficulties serializing DateTime type.
 		$json = $this->serializer->serialize($device, 'json', ['groups' => 'group-all']);		
 		return new Response($json, Response::HTTP_OK, $this->headers);
 	}
@@ -291,15 +337,13 @@ class DeviceController extends AbstractController
 		$name = $request->request->get('name');
 		$simCard = $request->request->get('simCard');
 		$os = $request->request->get('os');
-		$enabled = true; // for now, defaults to true. Should require admin verification later.
 		
 		if (!isset($uniqueId, $name, $os) || ctype_space($uniqueId) || empty($uniqueId))
 			return new Response(null, Response::HTTP_BAD_REQUEST, $this->headers);
 		
 		$device = new Device($uniqueId, $name, $os);
 		$device->setLastActivity(new \DateTime('now'));
-		if (isset($simCard))
-			$device->setSimCard(filter_var($simCard, FILTER_VALIDATE_BOOLEAN));
+		if (isset($simCard)) $device->setSimCard($simCard);
 		
 		// BAD_REQUEST if there already is a device with same uniqueId
 		$oldDevice = $this->getDoctrine()->getRepository(Device::class)->findOneBy(['uniqueId' => $uniqueId]);

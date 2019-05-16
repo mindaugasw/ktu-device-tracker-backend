@@ -5,7 +5,7 @@ nelmio_api_doc:
         info:
             title: Device tracker KTU-iTo
             #description: This is an awesome app!
-            version: 0.8.0
+            version: 0.9.0
         #securityDefinitions:
          #   Bearer:
           #      type: apiKey

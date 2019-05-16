@@ -102,12 +102,6 @@ class UserController extends AbstractController
 	 *         type="string",
 	 *     ),
 	 *     @SWG\Parameter(
-	 *         name="floor",
-	 *         in="formData",
-	 *         description="Update user's floor.",
-	 *         type="integer",
-	 *     ),
-	 *     @SWG\Parameter(
 	 *         name="qrCode",
 	 *         in="formData",
 	 *         description="Update user's qrCode.",
@@ -136,29 +130,29 @@ class UserController extends AbstractController
 	 */
 	public function updateUser(Request $request, AuthService $authService)
 	{
-		if (!$authService->verify($request))
+		if (!$authService->verify($request)) // Unauthorized
 			return new Response(null, Response::HTTP_UNAUTHORIZED, $this->headers);
 		
 		$id = $request->request->get('id');
-		if (!isset($id))
+		if (!isset($id)) // User id not set
 			return new Response(null, Response::HTTP_BAD_REQUEST, $this->headers);
 		
 		$em = $this->getDoctrine()->getManager();
 		$user = $em->getRepository(user::class)->find($id);
 		
-		if (!isset($user))
+		if (!isset($user)) // User not found
 			return new Response(null, Response::HTTP_NOT_FOUND, $this->headers);
 		
 		$name = $request->request->get('name');
 		$surname = $request->request->get('surname');
 		$office = $request->request->get('office');
-		$floor = $request->request->get('floor');
+		//$floor = $request->request->get('floor');
 		$qrCode = $request->request->get('qrCode');
 		
 		if (isset($name)) 	 	$user->setName($name);
 		if (isset($surname))	$user->setSurname($surname);
 		if (isset($office))		$user->setOffice($office);
-		if (isset($floor))		$user->setFloor($floor);
+		//if (isset($floor))		$user->setFloor($floor);
 		if (isset($qrCode))
 		{
 			$olduser = $this->getDoctrine()->getRepository(user::class)->findOneBy(['qrCode' => $qrCode]);
@@ -215,13 +209,6 @@ class UserController extends AbstractController
 	 *         required=true,
 	 *     ),
 	 *     @SWG\Parameter(
-	 *         name="floor",
-	 *         in="formData",
-	 *         description="User's floor.",
-	 *         type="integer",
-	 *         required=true,
-	 *     ),
-	 *     @SWG\Parameter(
 	 *         name="qrCode",
 	 *         in="formData",
 	 *         description="User's qrCode. If not provided, will be generated random string. Can be changed later.
@@ -256,10 +243,10 @@ class UserController extends AbstractController
 		$name = $request->request->get('name');
 		$surname = $request->request->get('surname');
 		$office = $request->request->get('office');
-		$floor = $request->request->get('floor');
+		//$floor = $request->request->get('floor');
 		$qrCode = $request->request->get('qrCode');
 		
-		if (!isset($name, $surname, $office, $floor))
+		if (!isset($name, $surname, $office))
 			return new Response(null, Response::HTTP_BAD_REQUEST, $this->headers);
 		
 		if (!isset($qrCode)) // If QR code was not set, generate a random one.
@@ -279,7 +266,7 @@ class UserController extends AbstractController
 				return new Response(null, Response::HTTP_BAD_REQUEST, $this->headers);
 		}
 
-		$newUser = new user($name, $surname, $office, $floor, $qrCode);
+		$newUser = new user($name, $surname, $office, $qrCode);
 			
 		$em = $this->getDoctrine()->getManager();
 		$em->persist($newUser);

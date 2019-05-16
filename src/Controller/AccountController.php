@@ -23,25 +23,6 @@ class AccountController extends AbstractController
 		$this->serializer = $serializer;
 	}
 	
-    /**
-     * @Route("/account/all", name="account_list", methods={"GET"})
-	 * 
-	 * Method is for authorization testing only.
-	 */
-    /*public function getAccountsList(Request $request, AuthService $authService)
-	{		
-		if (!$authService->verify($request))
-			return new Response(null, Response::HTTP_UNAUTHORIZED, $this->headers);
-		
-		$accounts = $this->getDoctrine()->getRepository(Account::class)->findAll();
-		$json = $this->serializer->serialize($accounts, 'json', ['groups' => 'group-all']);	
-		return new Response(
-			$json,
-			Response::HTTP_OK,
-			$this->headers
-		);
-    }*/
-	
 	/**
 	 * @Route("/login", name="login", methods={"POST"})
 	 * 
