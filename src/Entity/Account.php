@@ -30,8 +30,20 @@ class Account
      * @ORM\Column(type="string", length=64)
      */
     private $password;
-
-    public function getId(): ?int
+	
+	/**
+	 * Account constructor.
+	 * @param $username
+	 * @param $password
+	 */
+	public function __construct($username, $password)
+	{
+		$this->username = $username;
+		$this->password = $password;
+	}
+	
+	
+	public function getId(): ?int
     {
         return $this->id;
     }

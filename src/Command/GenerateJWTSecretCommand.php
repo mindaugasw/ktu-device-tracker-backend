@@ -18,9 +18,6 @@ class GenerateJWTSecretCommand extends Command
     {
         $this
             ->setDescription('Generates a JWT secret key and puts it into /src/Utils/JWTsecret.php . Can also be used to regenerate a key.');
-            //->addArgument('arg1', InputArgument::OPTIONAL, 'Argument description')
-            //->addOption('option1', null, InputOption::VALUE_NONE, 'Option description')
-        ;
     }
 
     protected function execute(InputInterface $input, OutputInterface $output)
