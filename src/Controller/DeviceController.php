@@ -198,8 +198,7 @@ class DeviceController extends AbstractController
 	 * 
 	 * @SWG\Post(
 	 *     summary="Update device info",
-	 *     description="Update information about specific device: it's name, SIM card status or phone number, or OS.
-				If there is no device with given uniqueId, a new device is created. In that case device name and OS must provided.",
+	 *     description="Update information about specific device: it's name, SIM card status or phone number, or OS. Only required parameter is uniqueId. All other parameters are optional and info will be updated only if that parameter is set (e.g. device OS will not be changed if you do not set that parameter).",
 	 * 	   produces={"application/json"},
 	 *     tags={"Devices"},
 	 *     @SWG\Parameter(
@@ -212,7 +211,7 @@ class DeviceController extends AbstractController
 	 *     @SWG\Parameter(
 	 *         name="name",
 	 *         in="formData",
-	 *         description="Updates device name. If creating new device, uniqueId must be not empty and not whitespace-only.",
+	 *         description="Updates device name.",
 	 *         type="string",
 	 *     ),
 	 *     @SWG\Parameter(
@@ -234,10 +233,8 @@ class DeviceController extends AbstractController
 	 * 		   )
 	 *     ),
 	 *     @SWG\Response(
-	 *         response=400,
-	 *         description="Bad request. Returns if:
-	               * there's no uniqueId provided
-	               * creating new device and name or OS are not provided"
+	 *         response=404,
+	 *         description="Device not found."
 	 *     ),
 	 * )
 	 */
@@ -254,21 +251,8 @@ class DeviceController extends AbstractController
 		$em = $this->getDoctrine()->getManager();
 		$device = $em->getRepository(Device::class)->findOneBy(['uniqueId' => $uniqueId]);
 		
-		if (!isset($device)) // Device not found - creating new
-		{
-			if (!isset($name, $os) || ctype_space($uniqueId) || empty($uniqueId))
-				return new Response(null, Response::HTTP_BAD_REQUEST, $this->headers);
-
-			$device = new Device($uniqueId, $name, $os);
-			$device->setLastActivity(new \DateTime('now'));
-			if (isset($simCard)) $device->setSimCard($simCard);
-			
-			$em->persist($device);
-			$em->flush();
-
-			$json = $this->serializer->serialize($device, 'json', ['groups' => 'group-all']);
-			return new Response($json, Response::HTTP_OK, $this->headers);
-		}
+		if (!isset($device)) // Device not found
+			return new Response(null, Response::HTTP_NOT_FOUND, $this->headers);
 		
 		if (isset($name)) 	 	$device->setName($name);
 		if (isset($simCard))	$device->setSimCard($simCard);
@@ -285,21 +269,27 @@ class DeviceController extends AbstractController
 	 *
 	 * @SWG\Post(
 	 *     summary="Create new device",
-	 *     description="Creates new device. It's also possible to create new device by sending new uniqueId to /device/new .",
+	 *     description="Creates new device.",
 	 * 	   produces={"application/json"},
-	 *     deprecated=true,
 	 *     tags={"Devices"},
+	 *     @SWG\Parameter(
+	 *         name="token",
+	 *         in="formData",
+	 *         description="JWT authorization token.",
+	 *         type="string",
+	 *     	   required=true
+	 *     ),
 	 *     @SWG\Parameter(
 	 *         name="deviceId",
 	 *         in="formData",
-	 *         description="Device unique identifier (uniqueId).",
+	 *         description="Device unique identifier (uniqueId). Must be not empty and not whitespace-only.",
 	 *         type="string",
 	 *     	   required=true
 	 *     ),
 	 *     @SWG\Parameter(
 	 *         name="name",
 	 *         in="formData",
-	 *         description="Device name. Must be not empty and not whitespace-only.",
+	 *         description="Device name.",
 	 *         type="string",
 	 *     	   required=true,
 	 *     ),
@@ -331,8 +321,11 @@ class DeviceController extends AbstractController
 	 *     ),
 	 * )
 	 */
-	public function createNewDevice(Request $request)
+	public function createNewDevice(Request $request, AuthService $authService)
 	{
+		if (!$authService->verify($request)) // Unauthorized
+			return new Response(null, Response::HTTP_UNAUTHORIZED, $this->headers);
+		
 		$uniqueId = $request->request->get('uniqueId');
 		$name = $request->request->get('name');
 		$simCard = $request->request->get('simCard');
