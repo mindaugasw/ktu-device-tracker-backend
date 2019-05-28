@@ -3,6 +3,7 @@
 
 namespace App\Service;
 
+use App\Utils\JWTsecret;
 use Firebase\JWT\JWT;
 use Symfony\Component\HttpFoundation\Request;
 
@@ -11,7 +12,12 @@ use Symfony\Component\HttpFoundation\Request;
  */
 class AuthService
 {
-	private const JWT_KEY = "vlEIkJeG3soQ4Ft24ocJ58ZUXgjsssIx";
+	private $JWT_KEY = '';
+	
+	public function __construct()
+	{
+		$this->JWT_KEY = JWTsecret::getJWTSecret();
+	}
 	
 	/**
 	 * Verify that this request is from authorized user.
@@ -34,7 +40,7 @@ class AuthService
 		
 		try
 		{
-			$decoded = JWT::decode($token, self::JWT_KEY, ['HS256']);
+			$decoded = JWT::decode($token, $this->JWT_KEY, ['HS256']);
 			//$data = (array) $decoded;
 			return true;
 		} catch (\Exception $ex)
@@ -63,6 +69,6 @@ class AuthService
 			]
 		];
 		
-		return JWT::encode($token, self::JWT_KEY);
+		return JWT::encode($token, $this->JWT_KEY);
 	}
 }
