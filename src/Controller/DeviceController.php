@@ -280,7 +280,7 @@ class DeviceController extends AbstractController
 	 *     	   required=true
 	 *     ),
 	 *     @SWG\Parameter(
-	 *         name="deviceId",
+	 *         name="uniqueId",
 	 *         in="formData",
 	 *         description="Device unique identifier (uniqueId). Must be not empty and not whitespace-only.",
 	 *         type="string",
