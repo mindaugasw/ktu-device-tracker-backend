@@ -12,10 +12,10 @@ With this system, whenever someone needs some specific device, they can open web
 This system makes it much easier for QA team to do its job when testing products on a wide range of devices or investigating bug on a specific device.
 
 ## Links
-[**Backend is live here**](http://devicetracker-env.sgxpxxsehq.eu-central-1.elasticbeanstalk.com/)  
-[API documentation](http://devicetracker-env.sgxpxxsehq.eu-central-1.elasticbeanstalk.com/api/docs)  
+~[**Backend is live here**](http://devicetracker-env.sgxpxxsehq.eu-central-1.elasticbeanstalk.com/)~  
+~[API documentation](http://devicetracker-env.sgxpxxsehq.eu-central-1.elasticbeanstalk.com/api/docs)~  
 [Postman collection with request templates](https://www.getpostman.com/collections/ccf99da1ba8281ccd4b7)  
-[**Web application (frontend) live here**](http://tommoc1.stud.if.ktu.lt/) (developed by a teammate)  
+~[**Web application (frontend) live here**](http://tommoc1.stud.if.ktu.lt/) (developed by a teammate)~  
 
 ## Backend installation
 Built with PHP + Symfony. Requires LAMP stack. 
