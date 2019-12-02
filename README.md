@@ -15,7 +15,7 @@ This system makes it much easier for QA team to do its job when testing products
 ~[**Backend is live here**](http://devicetracker-env.sgxpxxsehq.eu-central-1.elasticbeanstalk.com/)~  
 ~[API documentation](http://devicetracker-env.sgxpxxsehq.eu-central-1.elasticbeanstalk.com/api/docs)~  
 [Postman collection with request templates](https://www.getpostman.com/collections/ccf99da1ba8281ccd4b7)  
-~[**Web application (frontend) live here**](http://tommoc1.stud.if.ktu.lt/) (developed by a teammate)~  
+~[**Web application (frontend) live here**](http://tommoc1.stud.if.ktu.lt/)~  
 
 ## Backend installation
 Built with PHP + Symfony. Requires LAMP stack. 
